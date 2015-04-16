@@ -27,10 +27,9 @@ class Hangman:
         # Did the player try to solve the word
         if len(guess) > 1:
             if guess == self.word:
-                print("Winning")
-
+                print("You won.")
             else:
-                print("Wrong!!!")
+                print("Your solution was wrong.")
 
         else:
             # Todo: catch multiple times the same letter
@@ -41,10 +40,6 @@ class Hangman:
 
             else:
                 self.guessed_wrong_letters.append(guess)
-
-        # Check for winning
-        if all(l in self.guessed_right_letters for l in self.word):
-            print("Winning")
 
         return letter_was_in_word
 
@@ -61,8 +56,13 @@ class Hangman:
 
         print(''.join(output))
 
-    def is_over(self):
-        return len(self.guessed_right_letters +
-                   self.guessed_wrong_letters) == 10
+    def get_status(self):
+
+        if len(self.guessed_wrong_letters) == 5:
+            return 0
+        elif len(self.guessed_right_letters) == len(list(set(self.word))):
+            return 1
+        else:
+            return 2
 
     
