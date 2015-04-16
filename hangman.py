@@ -19,6 +19,8 @@ class Hangman:
 
     def make_guess(self, guess):
 
+        letter_was_in_word = False
+
         # 'Normalize' word
         guess = guess.upper()
 
@@ -35,12 +37,16 @@ class Hangman:
 
             if guess in self.word:
                 self.guessed_right_letters.append(guess)
+                letter_was_in_word = True
+
             else:
                 self.guessed_wrong_letters.append(guess)
 
         # Check for winning
         if all(l in self.guessed_right_letters for l in self.word):
             print("Winning")
+
+        return letter_was_in_word
 
     def print_status(self):
 
@@ -57,6 +63,6 @@ class Hangman:
 
     def is_over(self):
         return len(self.guessed_right_letters +
-                   self.guessed_wrong_letters) == 6
+                   self.guessed_wrong_letters) == 10
 
     

@@ -11,11 +11,35 @@ from optparse import OptionParser
 import time
 
 
-NAO_IP = "169.254.95.24"
+NAO_IP = "10.0.1.3"
 
 # Global variable to store the HumanGreeter module instance
 SpeechEventListener = None
 memory = None
+
+
+class SpeechEventModule(ALModule):
+    def __init__(self, name):
+        ALModule.__init__(self, name)
+
+        global asr
+        asr = ALProxy("ALSpeechRecognition", NAO_IP, 9559)
+    
+        asr.setLanguage("English")
+
+        vocabulary = ["h", "e", "l", "o", "i", "t", "r", "b", "yes", "hey"]
+        asr.setVocabulary(vocabulary, False)
+
+        global memory
+        memory = ALProxy('ALMemory', NAO_IP, 9559)
+        memory.subscribeToEvent("WordRecognized", name, "onWordRecognized")
+
+    def onWordRecognized(self, key, value, message):
+        print "Event detected!"
+        print "Key: ", key
+        print "Value: " , value
+        print "Message: " , message
+        memory.unsubscribeToEvent("WordRecognized", name, "onWordRecognized")
 
 
 # NATO alphabet
@@ -27,10 +51,12 @@ for ix, row in raw_alphabet.iterrows():
     print(row)
     alphabet[row['Word']] = row['Letter']
 
-# Insert stop command
-alphabet['stop'] = 'stop'
-
 print(alphabet)
+
+def toletter(guess_long):
+    print alphabet.ix[alphabet['Word'] == guess_long, 0]
+    return alphabet.ix[alphabet['Word'] == guess_long, 0][0]
+    
 
 def main():
 
@@ -79,7 +105,7 @@ def main():
 
     # Start the game
     
-    tts.say("Welcome to our Hangman game")
+    #tts.say("Welcome to our Hangman game")
 
     dictionary = pd.read_csv("dict_en.txt", sep = '\n').iloc[:, 0].values.tolist()
     hangman_game = hangman.Hangman(dictionary)
@@ -89,24 +115,19 @@ def main():
     while True:
         tts.say("Please guess a letter")
 
-        print()
-
         # Start the speech recognition engine with user Test_ASR
         asr.subscribe("Test_ASR")
         time.sleep(3)
         guess_long = memory.getData("WordRecognized")[0]
-        print(memory.getData("WordRecognized"))
-        asr.unsubscribe("Test_ASR")
 
-        # Break on saying stop
-        if guess_long == 'stop':
-            break
 
-        # If something has been recognized during the set time frame
         if guess_long != '': 
             guess = alphabet[guess_long]
             tts.say("You guessed the letter: " + guess)
 
+        asr.unsubscribe("Test_ASR")
+
+        if guess_long != '': 
             letter_was_in_word = hangman_game.make_guess(guess)
 
             if letter_was_in_word:
