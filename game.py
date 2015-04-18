@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 
 import random
+import motion
 
 from naoqi import ALProxy
 from naoqi import ALBroker
@@ -10,12 +11,15 @@ from naoqi import ALModule
 
 from optparse import OptionParser
 from hangman_speechevent import SpeechEventModule
+from social_interaction import *
 
 import time
 
-# Initialize text to Speech
-tts = ALProxy("ALTextToSpeech", NAO_IP, 9559)
-tts.enableNotifications()
+# NAO's IP address
+NAO_IP = "169.254.95.24"
+
+global memory
+memory = ALProxy('ALMemory', NAO_IP, 9559)
 
 # Naos sentences:
 
@@ -37,15 +41,16 @@ text_guess_wrong = ["Too bad, this letter is not in the word!",
                     "Nice try but no it's not in there."]
 
 # Final sentence if the game was lost
-text_loser = ["Loser",
-              "Oh no, you've lost the game",
-              "Unfortunately, I have to tell you that you've lost the game",
-              "Guess what?! You've lost the game!"]
+text_loser = ["Loser! Yeah I have won the game!",
+              "Oh no, you've lost the game. That means I am the winner!",
+              "Unfortunately, I have to tell you that you've lost the game. That means I am the winner!",
+              "Guess what?! You've lost the game! And I am the winner!"]
 
 # Final sentence if the game was won
-text_winner = ["Yeah, you've won!",
-               "You are the winner!",
-               "You won!"]
+text_winner = ["Yeah, you've won! An I'm the loser",
+               "You are the winner! And I lost the game.",
+               "Congratulations! You have won the game! That means I'm the loser",
+               "You're a hang man professional! You have won! But I lost."]
 
 # Repeat the guess from the user
 text_repeat = ["Your guess is: ",
@@ -53,24 +58,10 @@ text_repeat = ["Your guess is: ",
                "You've chosen letter: ",
                "Your letter is: "]
 
+text_guess_repeated_letter = ["You know that you've guessed this letter before, right?",
+                              "You have already guessed this letter before",
+                              "You should not guess the same letter twice"]
 
-def nao_speech(possible_sentences):
-    """
-    Let Nao randomly select one of the possible sentences and speak them out loud
-    """
-
-    tts.say("\\bound=S\\\\rspd=75\\" + random.choice(possible_sentences))
-
-
-# NAO's IP address
-NAO_IP = "169.254.95.24"
-
-# Global variables
-global SpeechEventListener
-SpeechEventListener = None
-
-# Initialize NAO's memory
-memory = ALProxy('ALMemory', NAO_IP, 9559)
 
 # NATO alphabet
 alphabet = pd.Series.from_csv("nato.csv", header=0)
@@ -95,7 +86,7 @@ def main():
     pport = opts.pport
 
     # Get Nao's vocabulary
-    vocabulary = raw_alphabet.keys().tolist()
+    vocabulary = alphabet.keys().tolist()
 
     # We need this broker to be able to construct
     # NAOqi modules and subscribe to other modules
@@ -105,10 +96,22 @@ def main():
        0,           # find a free port and use it
        pip,         # parent broker IP
        pport)       # parent broker port
-    
-    
+
+    # Initialze
+    greeting()
+
     # Start the game
-    nao_speech(["Welcome to my hang man game"])
+    nao_speech(["Okay, let's start with the hang man game"])
+    nao_speech(["Let me think about a word"])
+
+    ledsProxy.fadeRGB("FaceLeds", 1 * 1 * 255, 1)
+    ledsProxy.fadeRGB("FaceLeds", 1 * 256 * 255, 1)
+    ledsProxy.fadeRGB("FaceLeds", 79 * 256 * 255, 1)
+    ledsProxy.fadeRGB("FaceLeds", 44 * 1 * 255, 1)
+    ledsProxy.fadeRGB("FaceLeds", 226 * 245 * 222, 1)
+
+    nao_speech(["Okay got one"])
+    time.sleep(1)
 
     # Read list of words for hangman  
     dictionary = pd.read_csv("dict_en.txt", sep = '\n').iloc[:, 0].values.tolist()
@@ -116,12 +119,22 @@ def main():
     # Create an instance of a hangman game
     hangman_game = hangman.Hangman(dictionary)
 
+
+    i = 0  # Counter for while loop
     while True:
 
         # For example: "Please guess a letter"
-        nao_speech(text_guess_letter)
+        
+        # First guess
+        if i == 0:
+            nao_speech(["Please make your first guess"])
+        
+        # All successive guesses
+        else:
+            nao_speech(text_guess_letter)
 
         # Include if we want to use events instead of a continuous speech recognition
+        global SpeechEventListener
         SpeechEventListener = SpeechEventModule("SpeechEventListener", vocabulary)
 
         # Wait for input
@@ -132,15 +145,15 @@ def main():
             # Check three times per second
             time.sleep(0.33)
 
-        # Break on saying stop
-        if guess_long == 'Stop':
-            break
-
         # If something has else been recognized during the set time frame
         if guess_long != '': 
 
             # Get letter based on NATO word
             guess = alphabet[guess_long]
+
+            # Break on saying stop
+            if guess == 'Stop':
+                break
 
             # Repeat letter
             repeat_letter = [sentence + guess for sentence in text_repeat]
@@ -149,10 +162,14 @@ def main():
             # Determine if letter was in word
             letter_was_in_word = hangman_game.make_guess(guess)
 
-            if letter_was_in_word:
+            # Determine status of the letter (0: wrong, 1: right, 2: repeated)
+            if letter_was_in_word == 1:
                 nao_speech(text_guess_right)
 
-            else:
+            if letter_was_in_word == 2:
+                nao_speech(text_guess_repeated_letter)
+
+            if letter_was_in_word == 0:
                 nao_speech(text_guess_wrong)
                                
             hangman_game.print_status()
@@ -161,13 +178,19 @@ def main():
 
             # Determine game status
             if status == 0:
-                tts.say("\\bound=S\\Loser")
+                nao_speech(text_loser)
+                winner_move()
                 break
             if status == 1:
-                tts.say("\\bound=S\\You won")
+                nao_speech(text_winner)
+                loser_move()
                 break
             if status == 2:
                 pass
+        i += 1
+
+    nao_speech(["This is the end, my friend. Bye bye, H R I people"])
+    wave()
 
 if __name__ == "__main__":
     main()

@@ -4,24 +4,27 @@ from naoqi import ALModule
 
 from optparse import OptionParser
 
+# NAO's IP address
 NAO_IP = "169.254.95.24"
 
 class SpeechEventModule(ALModule):
     def __init__(self, name, vocabulary):
         ALModule.__init__(self, name)
 
-        global asr
         global memory
+        memory = ALProxy('ALMemory', NAO_IP, 9559)
 
         self.module_name = name
 
-        asr = ALProxy("ALSpeechRecognition", NAO_IP, 9559)    
-        asr.setLanguage("English")
+        self.asr = ALProxy("ALSpeechRecognition", NAO_IP, 9559)
+            
+        try:
+            self.asr.setLanguage("English")
+            self.asr.setVocabulary(vocabulary, False)
+        except Exception, e:
+            pass
 
-        asr.setVocabulary(vocabulary, False)
-
-        memory = ALProxy('ALMemory', NAO_IP, 9559)
-        memory.subscribeToEvent("WordRecognized", name, "onWordRecognized")
+        memory.subscribeToEvent("WordRecognized", self.module_name, "onWordRecognized")
 
     def onWordRecognized(self, key, value, message):
         """ does this and that """
@@ -30,4 +33,4 @@ class SpeechEventModule(ALModule):
         print "Key: ", key
         print "Value: " , value
         print "Message: " , message
-        memory.unsubscribeToEvent("WordRecognized", self.module_name, "onWordRecognized")
+        memory.unsubscribeToEvent("WordRecognized", self.module_name)

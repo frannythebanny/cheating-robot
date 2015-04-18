@@ -1,111 +1,89 @@
-# -*- encoding: UTF-8 -*-
-""" Say 'hello, you' each time a human face is detected
+import hangman
+import pandas as pd
+import numpy as np
 
-"""
+import random
 
-import sys
-import time
+import motion
 
 from naoqi import ALProxy
 from naoqi import ALBroker
 from naoqi import ALModule
 
 from optparse import OptionParser
+from hangman_speechevent import SpeechEventModule
 
+import time
+
+# NAO's IP address
 NAO_IP = "169.254.95.24"
 
 
-# Global variable to store the HumanGreeter module instance
-HumanGreeter = None
-memory = None
 
 
-class HumanGreeterModule(ALModule):
-    """ A simple module able to react
-    to facedetection events
+# Initialize text to Speech
+tts = ALProxy("ALTextToSpeech", NAO_IP, 9559)
+tts.enableNotifications()
 
+
+def nao_speech(possible_sentences):
     """
-    def __init__(self, name):
-        ALModule.__init__(self, name)
-        # No need for IP and port here because
-        # we have our Python broker connected to NAOqi broker
-
-        # Create a proxy to ALTextToSpeech for later use
-        self.tts = ALProxy("ALTextToSpeech")
-
-        # Subscribe to the FaceDetected event:
-        global memory
-        memory = ALProxy("ALMemory")
-        memory.subscribeToEvent("FaceDetected",
-            "HumanGreeter",
-            "onFaceDetected")
-
-    def onFaceDetected(self, *_args):
-        """ This will be called each time a face is
-        detected.
-
-        """
-        # Unsubscribe to the event when talking,
-        # to avoid repetitions
-        memory.unsubscribeToEvent("FaceDetected",
-            "HumanGreeter")
-
-        self.tts.say("Hello, you")
-
-        # Subscribe again to the event
-        memory.subscribeToEvent("FaceDetected",
-            "HumanGreeter",
-            "onFaceDetected")
-
-
-def main():
-    """ Main entry point
-
+    Let Nao randomly select one of the possible sentences and speak them out loud
     """
-    parser = OptionParser()
-    parser.add_option("--pip",
-        help="Parent broker port. The IP address or your robot",
-        dest="pip")
-    parser.add_option("--pport",
-        help="Parent broker port. The port NAOqi is listening to",
-        dest="pport",
-        type="int")
-    parser.set_defaults(
-        pip=NAO_IP,
-        pport=9559)
 
-    (opts, args_) = parser.parse_args()
-    pip   = opts.pip
-    pport = opts.pport
-
-    # We need this broker to be able to construct
-    # NAOqi modules and subscribe to other modules
-    # The broker must stay alive until the program exists
-    myBroker = ALBroker("myBroker",
-       "0.0.0.0",   # listen to anyone
-       0,           # find a free port and use it
-       pip,         # parent broker IP
-       pport)       # parent broker port
+    tts.say("\\bound=S\\\\rspd=75\\" + random.choice(possible_sentences))
 
 
-    # Warning: HumanGreeter must be a global variable
-    # The name given to the constructor must be the name of the
-    # variable
-    global HumanGreeter
-    HumanGreeter = HumanGreeterModule("HumanGreeter")
+# Initialize motion
+motionProxy = ALProxy("ALMotion", NAO_IP, 9559)
+postureProxy = ALProxy("ALRobotPosture", NAO_IP, 9559)
 
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        print
-        print "Interrupted by user, shutting down"
-        myBroker.shutdown()
-        sys.exit(0)
+# Motion further parameters
+space     = motion.FRAME_ROBOT
+useSensor = False
+effectorName = "LArm"
 
+effectorInit = motionProxy.getPosition(effectorName, space, useSensor)
 
+# Active LArm tracking
+isEnabled = True
+motionProxy.wbEnableEffectorControl(effectorName, isEnabled)
 
-if __name__ == "__main__":
-    main()
+coef = 1.0
+if (effectorName == "LArm"):
+    coef = +1.0
+elif (effectorName == "RArm"):
+    coef = -1.0
 
+def StiffnessOn(proxy):
+    # We use the "Body" name to signify the collection of all joints
+    pNames = "Body"
+    pStiffnessLists = 1.0
+    pTimeLists = 1.0
+    proxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
 
+postureProxy.goToPosture("Stand", 0.5)
+
+targetCoordinateList = [
+[ +0.4, +0.00*coef, +0.4], # target1 for LArm
+[ +0.00, +0.00*coef, +0.00], # target2 for LArm
+[ +1.00, +1.00*coef, +1.00], # target2 for LArm
+]
+
+# Set NAO in Stiffness On
+StiffnessOn(motionProxy)
+
+# Give hand
+for i, targetCoordinate in enumerate(targetCoordinateList):
+    print(i)
+    print(targetCoordinate)
+    targetCoordinate = [targetCoordinate[i] + effectorInit[i] for i in range(3)]
+    motionProxy.wbSetEffectorControl(effectorName, targetCoordinate)
+    time.sleep(4.0)
+    if i == 0:
+        nao_speech(["Hi, my name is Naomi!"])
+        time.sleep(4.0)
+
+# Deactivate LArm tracking
+isEnabled    = False
+motionProxy.wbEnableEffectorControl(effectorName, isEnabled)
