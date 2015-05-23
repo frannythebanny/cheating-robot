@@ -6,6 +6,7 @@ from optparse import OptionParser
 
 # NAO's IP address
 NAO_IP = "169.254.95.24"
+NAO_IP = "10.0.1.3"
 
 class SpeechEventModule(ALModule):
     def __init__(self, name, vocabulary):
