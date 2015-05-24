@@ -2,32 +2,35 @@ import random
 
 # Note: self.dictionary (or a similiar variable) should be updated, after a guess is made
 
-class Hangman:
+class Evilhangman:
 
     def __init__(self, dictionary):
         self.dictionary = dictionary
         self.family = dictionary  # TODO: see if another alternative is better suited
-        self.word = self.random_word()
+        self.status = ""
         self.guessed_right_letters = []
         self.guessed_wrong_letters = []
 
-    def random_word(self):
-        """ Pick a random word from the dictionary"""
+    def initialize(self, word_length):
 
-        word = random.choice(self.dictionary).upper()
+        """
+        Reduce the initial dictionary to words of just a certain length
+        """
 
-        print(word)
-        return word
-
-    def create_families(self, guess, remaining_words):
+        self.family = [x for x in self.family if len(x) == word_length]
+        self.status = '_' * word_length
+        
+        return self.family
+        
+    def create_families(self, guess):
         """
         Take a list of currently possible words and a guess and
         determine the word families 
         """ 
-
+        
         families = {}
 
-        for word in remaining_words:
+        for word in self.family:
 
             # Determine family, i.e. the visual status of the word, e.g. e__e_
             family = str(self.get_family(word, guess))
@@ -58,43 +61,28 @@ class Hangman:
         status = ''.join(output)
         return status
 
-    def update_family(self, guess, remaining_words):        
+    def update_family(self, guess):        
 
         # Get current families
-        families = self.create_families(guess, remaining_words)
+        families = self.create_families(guess)
 
         # Determine the largest family
-        largest = max(families, key=lambda x: len(families[x]))
+        largestkey = max(families, key=lambda x: len(families[x]))
+        largestvalue = families[largestkey]
+        
+        self.family = largestvalue
+        self.status = largestkey
+        print(families[largestkey])
+        print(largestvalue)
 
-        self.family = families[largest]
-        return families[largest]
-    
-    def make_guess(self, guess):
-
-        letter_was_in_word = False
-
-        # 'Normalize' word
-        guess = guess.upper()
-
-        # Did the player try to solve the word
-        if len(guess) > 1:
-            if guess == self.word:
-                print("You won.")
-            else:
-                print("Your solution was wrong.")
-
+        if guess in largestkey:
+            self.guessed_right_letters.append(guess)
+            return True
         else:
-            # Todo: catch multiple times the same letter
-
-            if guess in self.word:
-                self.guessed_right_letters.append(guess)
-                letter_was_in_word = True
-
-            else:
-                self.guessed_wrong_letters.append(guess)
-
-        return letter_was_in_word
-
+            self.guessed_wrong_letters.append(guess)
+            return False
+            
+    
     def print_status(self, word):
 
         output = []
@@ -115,7 +103,7 @@ class Hangman:
 
         if len(self.guessed_wrong_letters) == 5:
             return 0
-        elif len(self.guessed_right_letters) == len(list(set(self.word))):
+        elif len(self.guessed_right_letters) == len(list(set(self.status))):
             return 1
         else:
             return 2

@@ -13,7 +13,6 @@ remaining_words = ['abba', 'acca', 'adda', 'efeu', 'dada']
 print(hangman_game.create_families('a', remaining_words))
 
 
-
 def LargestFamily(families):        
     largest = max(families, key=lambda x: len(families[x]))
     return families[largest]
