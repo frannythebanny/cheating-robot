@@ -6,7 +6,7 @@ class Hangman:
     def __init__(self, dictionary):
         self.dictionary = dictionary
         self.word = self.random_word()
-        self.guessed_right_letters = []
+        self.guessed_right_letters = set()
         self.guessed_wrong_letters = []
 
     def random_word(self):
@@ -19,7 +19,7 @@ class Hangman:
 
     def make_guess(self, guess):
 
-        letter_was_in_word = False
+        letter_was_in_word = 0
 
         # 'Normalize' word
         guess = guess.upper()
@@ -32,11 +32,15 @@ class Hangman:
                 print("Your solution was wrong.")
 
         else:
-            # Todo: catch multiple times the same letter
+            
+            if guess in self.guessed_right_letters or guess in self.guessed_wrong_letters:
+                letter_was_in_word = 2
+                self.guessed_wrong_letters.append(guess)
 
-            if guess in self.word:
-                self.guessed_right_letters.append(guess)
-                letter_was_in_word = True
+
+            elif guess in self.word:
+                self.guessed_right_letters.add(guess)
+                letter_was_in_word = 1
 
             else:
                 self.guessed_wrong_letters.append(guess)
