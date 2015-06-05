@@ -1,0 +1,2 @@
+* Cheating ideas
+** Play 3 rounds evil hangman, ask participants afterwards, if we've seen strange behavior or if they think the robot has cheated or something like that

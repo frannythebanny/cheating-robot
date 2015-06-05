@@ -2,14 +2,17 @@ import random
 
 # Note: self.dictionary (or a similiar variable) should be updated, after a guess is made
 
-class Evilhangman:
+class Cheaterhangman:
 
-    def __init__(self, dictionary):
+    def __init__(self, dictionary, evil=True):
         self.dictionary = dictionary
-        self.family = dictionary  # TODO: see if another alternative is better suited
+        self.evil = evil
+        
+        self.family = dictionary  
         self.status = ""
-        self.guessed_right_letters = []
+        self.guessed_right_letters = set()
         self.guessed_wrong_letters = []
+
 
     def initialize(self, word_length):
 
@@ -40,6 +43,7 @@ class Evilhangman:
             else:
                 families[family] = set([word])
 
+        print(families)
         return families
 
 
@@ -61,26 +65,52 @@ class Evilhangman:
         status = ''.join(output)
         return status
 
+        
     def update_family(self, guess):        
 
+        letter_was_in_word = 0
+        
         # Get current families
         families = self.create_families(guess)
 
-        # Determine the largest family
-        largestkey = max(families, key=lambda x: len(families[x]))
-        largestvalue = families[largestkey]
+        if self.evil:
+            # Filter all words that don't have that letter
+            sub_families ={family:words for (family,words) in families.iteritems()
+                           if guess not in family}
+
+        else:
+            # Filter all words that have that letter
+            sub_families ={family:words for (family,words) in families.iteritems()
+                           if guess in family}
+
+        # Select the largest equivalence class
+
+        if sub_families:
+            largestkey = max(sub_families, key=lambda x: len(sub_families[x]))
+            largestvalue = sub_families[largestkey]
+            print(sub_families[largestkey])
+        else:
+            largestkey = max(families, key=lambda x: len(families[x]))
+            largestvalue = families[largestkey]
+            print(families[largestkey])
         
         self.family = largestvalue
         self.status = largestkey
-        print(families[largestkey])
         print(largestvalue)
 
-        if guess in largestkey:
-            self.guessed_right_letters.append(guess)
-            return True
+        # Determine if letter has been guessed before.
+        if guess in self.guessed_right_letters or guess in self.guessed_wrong_letters:
+            letter_was_in_word = 2
+            self.guessed_wrong_letters.append(guess)
+
+        elif guess in largestkey:
+            self.guessed_right_letters.add(guess)
+            letter_was_in_word = 1            
         else:
             self.guessed_wrong_letters.append(guess)
-            return False
+            letter_was_in_word = 0
+
+        return letter_was_in_word
             
     
     def print_status(self, word):

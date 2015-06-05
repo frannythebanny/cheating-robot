@@ -1,0 +1,82 @@
+from kivy.app import App
+
+from kivy.uix.scatter import Scatter
+from kivy.uix.button import Button
+from kivy.uix.label import Label
+
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.textinput import TextInput
+from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.widget import Widget
+
+from kivy.network.urlrequest import UrlRequest
+from kivy.logger import Logger
+from kivy.clock import Clock, mainthread
+
+import time
+import json
+import threading
+
+
+class HBoxWidget(Widget):
+    """Documentation for HBoxWidget
+    
+    """
+    def __init__(self, **kwargs):
+        super(HBoxWidget, self).__init__(**kwargs)
+        
+        
+class VBoxWidget(Widget):
+    """Documentation for VBoxWidget
+    
+    """
+    def __init__(self, **kwargs):
+        super(VBoxWidget, self).__init__(**kwargs)
+        self.start_thread()
+
+
+    def start_thread(self):
+        threading.Thread(target=self.get_text_thread, args=()).start()
+
+    def get_text_thread(self):
+        # call my_callback every 0.5 seconds
+        Clock.schedule_interval(self.get_game_status, 2)
+
+    def update_game_status(self, req, results):
+        text = results["word_status"]
+
+        game_state = self.ids.game_state
+        game_state.text = text
+        
+    def get_game_status(self, dt):
+
+        headers = {'Content-type': 'application/json'}
+        req = UrlRequest('http://195.169.210.194:1234/1',
+                         on_success=self.update_game_status,
+                         req_headers=headers)
+
+            
+class GameView(BoxLayout):
+    """Documentation for GameView
+    
+    """
+    def __init__(self, **kwargs):
+        super(GameView, self).__init__(**kwargs)
+
+    stop = threading.Event()
+
+        
+class HangmanApp(App):
+
+    def on_stop(self):
+        # The Kivy event loop is about to stop, set a stop signal;
+        # otherwise the app window will close, but the Python process will
+        # keep running until all secondary threads exit.
+        self.root.stop.set()
+    
+    def build(self):
+        return GameView()
+     
+if __name__ == '__main__':
+    HangmanApp().run()
