@@ -19,6 +19,9 @@ class Hangman:
 
     def make_guess(self, guess):
 
+        # 0: wrong
+        # 1: right
+        # 2: already guessed before
         letter_was_in_word = 0
 
         # 'Normalize' word
@@ -32,7 +35,8 @@ class Hangman:
                 print("Your solution was wrong.")
 
         else:
-            
+
+            # Determine if letter has been guessed before.
             if guess in self.guessed_right_letters or guess in self.guessed_wrong_letters:
                 letter_was_in_word = 2
                 self.guessed_wrong_letters.append(guess)

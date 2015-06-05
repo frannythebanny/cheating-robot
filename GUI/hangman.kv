@@ -1,0 +1,61 @@
+<VBoxWidget>: 
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: 'vertical'
+        Label:
+            id: game_state
+            font_size: 50
+            text: '_ _ _ _ _'
+
+        Label:
+            id: guessed_letters
+            font_size: 50
+            text: 'A, B, C'
+            
+<HBoxWidget>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: 'horizontal'
+        canvas:
+            Line:
+                bezier: [self.center_x - 100, 50, self.center_x + 50, 100, self.center_x + 200, 50]
+                width: 2
+            Line:
+                bezier: [self.center_x + 50, 70, self.center_x + 50, 500]
+                width: 2
+            Line:
+                bezier: [self.center_x + 50, 500, self.center_x + 250, 500]
+                width: 2
+            Line:
+                bezier: [self.center_x + 250, 500, self.center_x + 250, 400]
+                width: 2
+            Line:
+                circle: [self.center_x + 250, 350, 50]
+                width: 2
+            Line:
+                points: [self.center_x + 250, 300, self.center_x + 250, 150]
+                width: 2
+            Line:
+                points: [self.center_x + 250, 150, self.center_x + 330, 120]
+                width: 2
+            Line:
+                points: [self.center_x + 250, 150, self.center_x + 170, 120]
+                width: 2
+            Line:
+                points: [self.center_x + 250, 250, self.center_x + 330, 170]
+                width: 2
+            Line:
+                points: [self.center_x + 250, 250, self.center_x + 170, 170]
+                width: 2
+
+
+            
+                
+<GameView>:
+    VBoxWidget:
+    HBoxWidget:            
+                             
+                
+        
