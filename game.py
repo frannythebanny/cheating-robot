@@ -31,15 +31,15 @@ text_guess_letter = ["Please guess a letter",
                      "What's your next letter of choice?"]
 
 # Answer if a guess was right
-text_guess_right = ["Your guess was right",
-                    "This was correct",
-                    "This was right"]
+text_guess_right = ["Your guess is right",
+                    "This is correct",
+                    "This is right"]
 
 # Answer if a guess was wrong
 text_guess_wrong = ["Too bad, this letter is not in the word!",
-                    "Your guess was wrong.",
-                    "Unfortunately, this was not correct.",
-                    "Nice try but no it's not in there."]
+                    "Your guess is wrong.",
+                    "Unfortunately, this is not correct.",
+                    "Nice try but no, it's not in there."]
 
 # Final sentence if the game was lost
 text_loser = ["Loser! Yeah I have won the game!",
@@ -58,6 +58,12 @@ text_repeat = ["Your guess is: ",
                "You guessed: ",
                "You've chosen letter: ",
                "Your letter is: "]
+               
+# Ask the user to repeat their letter
+text_repeat = ["Sorry for the misunderstanding. Please repeat your letter.",
+               "Could you repeat your letter then?",
+               "It would be great if you could repeat your chosen letter again",
+               "Which one was your letter then?"]
 
 text_guess_repeated_letter = ["You know that you've guessed this letter before, right?",
                               "You have already guessed this letter before",
@@ -66,6 +72,7 @@ text_guess_repeated_letter = ["You know that you've guessed this letter before, 
 
 # NATO alphabet
 alphabet = pd.Series.from_csv("nato.csv", header=0)
+fb_dict = pd.Series.from_csv("feedback.csv", header=0)
 
 def main():
 
@@ -88,6 +95,7 @@ def main():
 
     # Get Nao's vocabulary
     vocabulary = alphabet.keys().tolist()
+    fb_vocabulary = fb_dict.keys().tolist()
 
     # We need this broker to be able to construct
     # NAOqi modules and subscribe to other modules
@@ -125,7 +133,6 @@ def main():
     while True:
 
         # For example: "Please guess a letter"
-        
         # First guess
         if i == 0:
             nao_speech(["Please make your first guess"])
@@ -133,32 +140,59 @@ def main():
         # All successive guesses
         else:
             nao_speech(text_guess_letter)
-
-        # Include if we want to use events instead of a continuous speech recognition
-        global SpeechEventListener
-        SpeechEventListener = SpeechEventModule("SpeechEventListener", vocabulary)
-
-        # Wait for input
+            
+        #Waits for and processes letter input
         while True:
-            guess_long = memory.getData("WordRecognized")[0]
-            if guess_long != '':
-                break
-            # Check three times per second
-            time.sleep(0.33)
-
-        # If something has else been recognized during the set time frame
-        if guess_long != '': 
-
-            # Get letter based on NATO word
-            guess = alphabet[guess_long]
-
-            # Break on saying stop
-            if guess == 'Stop':
-                break
-
-            # Repeat letter
-            repeat_letter = [sentence + guess for sentence in text_repeat]
-            nao_speech(repeat_letter)
+            
+            # Include if we want to use events instead of a continuous speech recognition
+            global SpeechEventListener
+            SpeechEventListener = SpeechEventModule("SpeechEventListener", vocabulary)
+    
+            # Wait for first input
+            while True:
+                guess_long = memory.getData("WordRecognized")[0]
+                if guess_long != '':
+                    break
+                # Check three times per second
+                time.sleep(0.33)
+    
+            # If something has been recognized during the set time frame
+            if guess_long != '': 
+    
+                # Get letter based on NATO word
+                guess = alphabet[guess_long]
+    
+                # Break on saying stop
+                if guess == 'Stop':
+                    break
+    
+                # Repeat letter
+                repeat_letter = [sentence + guess + '?' for sentence in text_repeat]
+                nao_speech(repeat_letter)
+                
+                # Start to listen for confirmation                
+                global SpeechEventListener
+                SpeechEventListener = SpeechEventModule("SpeechEventListener", fb_vocabulary)
+    
+                # Wait for input for a total of one second
+                timer=0
+                while True:
+                    interrupt = memory.getData("WordRecognized")[0]
+                    if interrupt != '' | timer==3:
+                        break
+                    # Check three times per second
+                    time.sleep(0.33)
+                    timer += 1
+                    
+                if interrupt != '':
+                    
+                    feedback = fb_dict[interrupt]
+                
+                    if feedback == 'Yes':
+                        break
+                    else:
+                        nao_speech(repeat_guess)
+                    
 
             # Determine if letter was in word
             letter_was_in_word = hangman_game.make_guess(guess)
