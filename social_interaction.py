@@ -21,20 +21,28 @@ NAO_IP = "169.254.95.24"
 NAO_IP = "10.0.1.3"
 
 # Initialize proxies
-global tts
-tts = ALProxy("ALTextToSpeech", NAO_IP, 9559)
-tts.enableNotifications()
-motionProxy = ALProxy("ALMotion", NAO_IP, 9559)
-postureProxy = ALProxy("ALRobotPosture", NAO_IP, 9559)
-ledsProxy = ALProxy("ALLeds", NAO_IP, 9559)
 
 
-def nao_speech(possible_sentences):
+# Good for debugging because then we can test it without having the nao
+NAO_AVAILABLE = False
+
+if NAO_AVAILABLE:
+    global tts
+    tts = ALProxy("ALTextToSpeech", NAO_IP, 9559)
+    tts.enableNotifications()
+    motionProxy = ALProxy("ALMotion", NAO_IP, 9559)
+    postureProxy = ALProxy("ALRobotPosture", NAO_IP, 9559)
+    ledsProxy = ALProxy("ALLeds", NAO_IP, 9559)
+
+
+def nao_speech(possible_sentences, nao_available=True):
     """
     Let Nao randomly select one of the possible sentences and speak them out loud
     """
-
-    tts.say("\\bound=S\\\\rspd=75\\" + random.choice(possible_sentences))
+    if nao_available:
+        tts.say("\\bound=S\\\\rspd=75\\" + random.choice(possible_sentences))
+    else:
+        print(random.choice(possible_sentences))
 
 def StiffnessOn(proxy):
     # We use the "Body" name to signify the collection of all joints
@@ -139,55 +147,64 @@ def move_both_arms(rawTargetCoordinateList, timeFactor=1, isAbsolute=False):
 	isEnabled    = False
 	motionProxy.wbEnable(isEnabled)
 
-def greeting():
+def greeting(nao_available=True):
 
 	# Start social interaction
-	nao_speech(["Finally someone who wants to play with me"])
+	nao_speech(["Finally someone who wants to play with me"], nao_available)
 
+
+        if nao_available:
+        
+            # Send NAO to Pose Init
+            postureProxy.goToPosture("StandInit", 0.7)  
+
+            move_right_arm([
+                    [	# Right arm
+                    [0.00, 0.00, 0.00, 0.00, 0.00, 0.5], # target 4 for "RArm"
+                    [0.17, 0.00, 0.09, 0.00, 0.00, 0.5], # target 4 for "RArm"
+                    [0.17, 0.00, 0.10, 0.00, 0.00, 0.5], # target 4 for "RArm"
+                    [0.17, 0.00, 0.08, 0.00, 0.00, 0.5], # target 4 for "RArm"
+                ]
+            ],
+            timeFactor=0.7)
+
+	nao_speech(["Hi, my name is Naomi, who are you?"], nao_available)
+
+        if nao_available:
+        
+            move_right_arm([
+                    [	# Right arm
+                    [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
+                    [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
+                    [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
+                    [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
+                    [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
+                    [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
+                    [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
+                    [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
+                    [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
+                    [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
+                ]
+            ],
+            timeFactor=0.5)
+
+	nao_speech(["Nice to meet you"], nao_available)
+	nao_speech(["Let's play the hang man game"], nao_available)
+
+        if nao_available:
+
+            move_right_arm([
+                    [
+                    [0.00, 0.00, 0.00, 0.00, 0.00, 0.00],
+                    [-0.11, 0.00, -0.09, 0.00, 0.00, -0.5],
+                    ]
+            ])
+        
 	# Send NAO to Pose Init
-	postureProxy.goToPosture("StandInit", 0.7)  
+	nao_speech(["Let me sit down first, I'm an old lady"], nao_available)
 
-	move_right_arm([
-		[	# Right arm
-	    	[0.00, 0.00, 0.00, 0.00, 0.00, 0.5], # target 4 for "RArm"
-	    	[0.17, 0.00, 0.09, 0.00, 0.00, 0.5], # target 4 for "RArm"
-	    	[0.17, 0.00, 0.10, 0.00, 0.00, 0.5], # target 4 for "RArm"
-	    	[0.17, 0.00, 0.08, 0.00, 0.00, 0.5], # target 4 for "RArm"
-	    ]
-	],
-	timeFactor=0.7)
-
-	nao_speech(["Hi, my name is Naomi, who are you?"])
-
-	move_right_arm([
-		[	# Right arm
-	    	[0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-	        [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-	        [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-	        [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-	        [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-	        [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-	        [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-	        [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-	        [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-	        [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-	    ]
-	],
-	timeFactor=0.5)
-
-	nao_speech(["Nice to meet you"])
-	nao_speech(["Let's play the hang man game"])
-
-	move_right_arm([
-		[	# Right arm
-	    	[0.00, 0.00, 0.00, 0.00, 0.00, 0.00],
-	    	[-0.11, 0.00, -0.09, 0.00, 0.00, -0.5],
-	    	]
-	])
-
-	# Send NAO to Pose Init
-	nao_speech(["Let me sit down first, I'm an old lady"])
-	postureProxy.goToPosture("Sit", 0.3)  
+        if nao_available:
+	    postureProxy.goToPosture("Sit", 0.3)  
 
 def wave():
 	# Choregraphe bezier export in Python.

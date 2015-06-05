@@ -11,16 +11,21 @@ from naoqi import ALModule
 
 from optparse import OptionParser
 from hangman_speechevent import SpeechEventModule
-from social_interaction import *
+import social_interaction
 
 import time
 
-# NAO's IP address
-NAO_IP = "169.254.95.24"
-NAO_IP = "10.0.1.3"
+# Good for debugging because then we can test it without having the nao
+NAO_AVAILABLE = False
 
-global memory
-memory = ALProxy('ALMemory', NAO_IP, 9559)
+# NAO's IP address
+NAO_IP = "10.0.1.3" if NAO_AVAILABLE else "localhost"
+NAO_PORT = 9559
+
+
+if NAO_AVAILABLE:
+    global memory
+    memory = ALProxy('ALMemory', NAO_IP, NAO_PORT)
 
 # Naos sentences:
 
@@ -60,7 +65,7 @@ text_repeat = ["Your guess is: ",
                "Your letter is: "]
                
 # Ask the user to repeat their letter
-text_repeat = ["Sorry for the misunderstanding. Please repeat your letter.",
+ask_repeat = ["Sorry for the misunderstanding. Please repeat your letter.",
                "Could you repeat your letter then?",
                "It would be great if you could repeat your chosen letter again",
                "Which one was your letter then?"]
@@ -71,83 +76,91 @@ text_guess_repeated_letter = ["You know that you've guessed this letter before, 
 
 
 # NATO alphabet
-alphabet = pd.Series.from_csv("nato.csv", header=0)
-fb_dict = pd.Series.from_csv("feedback.csv", header=0)
+alphabet = pd.Series.from_csv(os.path.join("dictionaries", "nato.csv"), header=0)
+fb_dict = pd.Series.from_csv(os.path.join("dictionaries", "feedback.csv"), header=0)
 
 def main():
-
-    # NAO parser
-    parser = OptionParser()
-    parser.add_option("--pip",
-        help="Parent broker port. The IP address or your robot",
-        dest="pip")
-    parser.add_option("--pport",
-        help="Parent broker port. The port NAOqi is listening to",
-        dest="pport",
-        type="int")
-    parser.set_defaults(
-        pip=NAO_IP,
-        pport=9559)
-
-    (opts, args_) = parser.parse_args()
-    pip   = opts.pip
-    pport = opts.pport
 
     # Get Nao's vocabulary
     vocabulary = alphabet.keys().tolist()
     fb_vocabulary = fb_dict.keys().tolist()
 
-    # We need this broker to be able to construct
-    # NAOqi modules and subscribe to other modules
-    # The broker must stay alive until the program exists
-    myBroker = ALBroker("myBroker",
-       "0.0.0.0",   # listen to anyone
-       0,           # find a free port and use it
-       pip,         # parent broker IP
-       pport)       # parent broker port
+    if NAO_AVAILABLE:
+        # NAO parser
+        parser = OptionParser()
+        parser.add_option("--pip",
+            help="Parent broker port. The IP address or your robot",
+            dest="pip")
+        parser.add_option("--pport",
+            help="Parent broker port. The port NAOqi is listening to",
+            dest="pport",
+            type="int")
+        parser.set_defaults(
+            pip=NAO_IP,
+            pport=9559)
+
+        (opts, args_) = parser.parse_args()
+        pip   = opts.pip
+        pport = opts.pport
+
+        # We need this broker to be able to construct
+        # NAOqi modules and subscribe to other modules
+        # The broker must stay alive until the program exists
+        myBroker = ALBroker("myBroker",
+           "0.0.0.0",   # listen to anyone
+           0,           # find a free port and use it
+           pip,         # parent broker IP
+           pport)       # parent broker port
 
     # Initialze
-    greeting()
+    social_interaction.greeting(NAO_AVAILABLE)
 
     # Start the game
-    nao_speech(["Okay, let's start with the hang man game"])
-    nao_speech(["Let me think about a word"])
+    social_interaction.nao_speech(["Okay, let's start with the hang man game"], NAO_AVAILABLE)
+    social_interaction.nao_speech(["Let me think about a word"], NAO_AVAILABLE)
 
-    ledsProxy.fadeRGB("FaceLeds", 1 * 1 * 255, 1)
-    ledsProxy.fadeRGB("FaceLeds", 1 * 256 * 255, 1)
-    ledsProxy.fadeRGB("FaceLeds", 79 * 256 * 255, 1)
-    ledsProxy.fadeRGB("FaceLeds", 44 * 1 * 255, 1)
-    ledsProxy.fadeRGB("FaceLeds", 226 * 245 * 222, 1)
 
-    nao_speech(["Okay got one"])
+    if NAO_AVAILABLE:
+        ledsProxy.fadeRGB("FaceLeds", 1 * 1 * 255, 1)
+        ledsProxy.fadeRGB("FaceLeds", 1 * 256 * 255, 1)
+        ledsProxy.fadeRGB("FaceLeds", 79 * 256 * 255, 1)
+        ledsProxy.fadeRGB("FaceLeds", 44 * 1 * 255, 1)
+        ledsProxy.fadeRGB("FaceLeds", 226 * 245 * 222, 1)
+
+    social_interaction.nao_speech(["Okay got one"], NAO_AVAILABLE)
     time.sleep(1)
 
     # Read list of words for hangman  
-    dictionary = pd.read_csv("dict_en.txt", sep = '\n').iloc[:, 0].values.tolist()
+    dictionary = pd.read_csv(os.path.join("dictionaries", "dict_en.txt"), sep = '\n').iloc[:, 0].values.tolist()
     
     # Create an instance of a hangman game
     hangman_game = hangman.Hangman(dictionary)
 
 
     i = 0  # Counter for while loop
-    while True:
+    user_canceled = False
+    status = 2 # 2 means game is running
 
-        # For example: "Please guess a letter"
-        # First guess
+    while status == 2:
+
         if i == 0:
-            nao_speech(["Please make your first guess"])
-        
-        # All successive guesses
+            # For example: "Please guess a letter"
+            # First guess
+            social_interaction.nao_speech(["Please make your first guess"], NAO_AVAILABLE)
+
+        elif user_canceled:
+            social_interaction.nao_speech(ask_repeat, NAO_AVAILABLE)
+            user_canceled = False
+
         else:
-            nao_speech(text_guess_letter)
+            social_interaction.nao_speech(text_guess_letter, NAO_AVAILABLE)
+        
             
-        #Waits for and processes letter input
-        while True:
-            
+        if NAO_AVAILABLE:
             # Include if we want to use events instead of a continuous speech recognition
             global SpeechEventListener
             SpeechEventListener = SpeechEventModule("SpeechEventListener", vocabulary)
-    
+
             # Wait for first input
             while True:
                 guess_long = memory.getData("WordRecognized")[0]
@@ -155,77 +168,87 @@ def main():
                     break
                 # Check three times per second
                 time.sleep(0.33)
+
+        else:
+            # Text input
+            guess_long = raw_input("DEBUG: Please make a guess (from NATO alphabet):   ")
+
+        # Get letter based on NATO word
+        if guess_long in alphabet.index:
+            guess = alphabet[guess_long]
+        else:
+           social_interaction.nao_speech(["This letter is not part of the Nato alphabet"],
+                                         NAO_AVAILABLE)
+           i += 1
+           continue
     
-            # If something has been recognized during the set time frame
-            if guess_long != '': 
-    
-                # Get letter based on NATO word
-                guess = alphabet[guess_long]
-    
-                # Break on saying stop
-                if guess == 'Stop':
-                    break
-    
-                # Repeat letter
-                repeat_letter = [sentence + guess + '?' for sentence in text_repeat]
-                nao_speech(repeat_letter)
-                
-                # Start to listen for confirmation                
-                global SpeechEventListener
-                SpeechEventListener = SpeechEventModule("SpeechEventListener", fb_vocabulary)
-    
-                # Wait for input for a total of one second
-                timer=0
-                while True:
-                    interrupt = memory.getData("WordRecognized")[0]
-                    if interrupt != '' | timer==3:
-                        break
-                    # Check three times per second
-                    time.sleep(0.33)
-                    timer += 1
-                    
+
+        # Break the entire interaction on saying stop
+        # TODO: another safe word would be better
+        if guess == 'Stop':
+            break
+
+        # Repeat letter
+        repeat_letter = [sentence + guess + '?' for sentence in text_repeat]
+        social_interaction.nao_speech(repeat_letter, NAO_AVAILABLE)
+
+        if NAO_AVAILABLE:
+            # Start to listen for confirmation                
+            global SpeechEventListener2
+            SpeechEventListener2 = SpeechEventModule("SpeechEventListener", fb_vocabulary)
+
+        # Wait for input for a total of one second
+
+        if NAO_AVAILABLE:
+            feedback = None
+            for timer in range(4):
+                interrupt = memory.getData("WordRecognized")[0]
                 if interrupt != '':
-                    
                     feedback = fb_dict[interrupt]
-                
-                    if feedback == 'Yes':
-                        break
-                    else:
-                        nao_speech(repeat_guess)
-                    
+                    break
+                # Check three times per second
+                time.sleep(0.33)                    
 
-            # Determine if letter was in word
-            letter_was_in_word = hangman_game.make_guess(guess)
+                # If user wanted to have another letter 
+            if feedback == 'No':
+                user_canceled = True
+                i += 1
+                continue
 
-            # Determine status of the letter (0: wrong, 1: right, 2: repeated)
-            if letter_was_in_word == 1:
-                nao_speech(text_guess_right)
+        # Determine if letter was in word
+        letter_was_in_word = hangman_game.make_guess(guess)
 
-            if letter_was_in_word == 2:
-                nao_speech(text_guess_repeated_letter)
+        # Determine status of the letter (0: wrong, 1: right, 2: repeated)
+        if letter_was_in_word == 1:
+            social_interaction.nao_speech(text_guess_right, NAO_AVAILABLE)
 
-            if letter_was_in_word == 0:
-                nao_speech(text_guess_wrong)
-                               
-            hangman_game.print_status()
-        
-            status = hangman_game.get_status()
+        if letter_was_in_word == 2:
+            social_interaction.nao_speech(text_guess_repeated_letter, NAO_AVAILABLE)
 
-            # Determine game status
-            if status == 0:
-                nao_speech(text_loser)
-                winner_move()
-                break
-            if status == 1:
-                nao_speech(text_winner)
+        if letter_was_in_word == 0:
+            social_interaction.nao_speech(text_guess_wrong, NAO_AVAILABLE)
+
+        hangman_game.print_status()
+
+        status = hangman_game.get_status()
+
+        # Determine game status
+        if status == 0:
+            social_interaction.nao_speech(text_loser, NAO_AVAILABLE)
+            if NAO_AVAILABLE:
+                social_interaction.winner_move()
+        if status == 1:
+            social_interaction.nao_speech(text_winner, NAO_AVAILABLE)
+            if NAO_AVAILABLE:
                 loser_move()
-                break
-            if status == 2:
-                pass
+
         i += 1
 
-    nao_speech(["This is the end, my friend. Bye bye, H R I people"])
-    wave()
+    
+    social_interaction.nao_speech(["This is the end, my friend. Bye bye, H R I people"], NAO_AVAILABLE)
+
+    if NAO_AVAILABLE:
+        social_interaction.wave()
 
 if __name__ == "__main__":
     main()
