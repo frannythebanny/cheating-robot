@@ -6,8 +6,6 @@ import os
 import random
 import motion
 
-import os
-
 from naoqi import ALProxy
 from naoqi import ALBroker
 from naoqi import ALModule
@@ -15,7 +13,6 @@ from naoqi import ALModule
 from optparse import OptionParser
 from hangman_speechevent import SpeechEventModule
 import socialInteraction_fran
-import send_request
 
 import time
 
@@ -225,8 +222,13 @@ def main():
                 i += 1
                 continue
 
-        # Determine if letter was in word
+
+        # THIS IS THE BEGINNING OF THE INTERFACE
+
+        # Determine if the letter was in word
         letter_was_in_word = hangman_game.make_guess(guess)
+        
+        # END OF INTERFACE
 
         # Determine status of the letter (0: wrong, 1: right, 2: repeated)
         if letter_was_in_word == 1:

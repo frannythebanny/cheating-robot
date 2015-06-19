@@ -1,209 +1,9 @@
-import hangman
-import pandas as pd
-import numpy as np
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Jun 12 17:22:18 2015
 
-import random
-# import motion
-import almath
-
-from naoqi import ALProxy
-from naoqi import ALBroker
-from naoqi import ALModule
-
-from optparse import OptionParser
-from hangman_speechevent import SpeechEventModule
-
-import time
-
-# NAO's IP address
-NAO_IP = "169.254.95.24"
-NAO_IP = "10.0.1.5"
-NAO_PORT = 9559
-
-# Initialize proxies
-
-
-# Good for debugging because then we can test it without having the nao
-NAO_AVAILABLE = True
-
-if NAO_AVAILABLE:
-    global tts
-    global memory
-    tts = ALProxy("ALTextToSpeech", NAO_IP, NAO_PORT)
-    tts.enableNotifications()
-    motionProxy = ALProxy("ALMotion", NAO_IP, NAO_PORT)
-    postureProxy = ALProxy("ALRobotPosture", NAO_IP, NAO_PORT)
-    
-def nao_speech(possible_sentences, nao_available=True):
-    """
-    Let Nao randomly select one of the possible sentences and speak them out loud
-    """
-    if nao_available:
-        tts.say("\\bound=S\\\\rspd=75\\" + random.choice(possible_sentences))
-    else:
-        print(random.choice(possible_sentences))
-
-def StiffnessOn(proxy):
-    # We use the "Body" name to signify the collection of all joints
-    pNames = "Body"
-    pStiffnessLists = 1.0
-    pTimeLists = 1.0
-    motionProxy.stiffnessInterpolation(pNames, pStiffnessLists, pTimeLists)
-
-def move_right_arm(rawTargetCoordinateList, timeFactor=1, isAbsolute=False):
-	
-	# Set NAO in Stiffness On
-	StiffnessOn(motionProxy)
-
-	# Get NAOs space
-	space = motion.FRAME_ROBOT
-
-	useSensor = False
-	effectorInit = np.array(motionProxy.getPosition("RArm", space, useSensor))
-
-	targetCoordinateList = (effectorInit + np.array(rawTargetCoordinateList)).tolist()
-
-	# Since the line above does not seem to work
-	targetCoordinateList = rawTargetCoordinateList
-
-	effectorList = ["RArm"]
-
-	# Enable Whole Body Balancer
-	isEnabled  = True
-	motionProxy.wbEnable(isEnabled)
-
-	# Legs are constrained fixed
-	stateName  = "Fixed"
-	supportLeg = "Legs"
-	motionProxy.wbFootState(stateName, supportLeg)
-
-	# Constraint Balance Motion
-	isEnable   = True
-	supportLeg = "Legs"
-	motionProxy.wbEnableBalanceConstraint(isEnable, supportLeg)
-
-	axisMaskList = [almath.AXIS_MASK_VEL] # for "RArm"
-
-	# Determine the time stamps for the movements of the arm
-	timesList  = [
-		[timeFactor * (i+1) for i in range(len(targetCoordinateList[0]))]
-		] # for "RArm" in seconds
-
-	 # called cartesian interpolation
-	motionProxy.positionInterpolations(effectorList, space, targetCoordinateList,
-	                             axisMaskList, timesList, isAbsolute)
-
-	# Deactivate whole body
-	isEnabled    = False
-	motionProxy.wbEnable(isEnabled)
-
-def move_both_arms(rawTargetCoordinateList, timeFactor=1, isAbsolute=False):
-	
-	# Set NAO in Stiffness On
-	StiffnessOn(motionProxy)
-
-	# Get NAOs space
-	space = motion.FRAME_ROBOT
-
-	useSensor = False
-	effectorInit = np.array(motionProxy.getPosition("RArm", space, useSensor))
-
-	targetCoordinateList = (effectorInit + np.array(rawTargetCoordinateList)).tolist()
-
-	# Since the line above does not seem to work
-	targetCoordinateList = rawTargetCoordinateList
-
-	effectorList = ["RArm", "LArm"]
-
-	# Enable Whole Body Balancer
-	isEnabled  = True
-	motionProxy.wbEnable(isEnabled)
-
-	# Legs are constrained fixed
-	stateName  = "Fixed"
-	supportLeg = "Legs"
-	motionProxy.wbFootState(stateName, supportLeg)
-
-	# Constraint Balance Motion
-	isEnable   = True
-	supportLeg = "Legs"
-	motionProxy.wbEnableBalanceConstraint(isEnable, supportLeg)
-
-	axisMaskList = [almath.AXIS_MASK_VEL,
-					almath.AXIS_MASK_VEL,] # for "RArm"
-
-	# Determine the time stamps for the movements of the arm
-	timesList  = [
-		[timeFactor * (i+1) for i in range(len(targetCoordinateList[0]))],
-		[timeFactor * (i+1) for i in range(len(targetCoordinateList[1]))]
-		] # for "RArm" in seconds
-
-	 # called cartesian interpolation
-	motionProxy.positionInterpolations(effectorList, space, targetCoordinateList,
-	                             axisMaskList, timesList, isAbsolute)
-
-	# Deactivate whole body
-	isEnabled    = False
-	motionProxy.wbEnable(isEnabled)
-
-def greeting(nao_available=True):
-
-	# Start social interaction
-	nao_speech(["Finally someone who wants to play with me"], nao_available)
-
-
-        if nao_available:
-        
-            # Send NAO to Pose Init
-            postureProxy.goToPosture("StandInit", 0.7)  
-
-            move_right_arm([
-                    [	# Right arm
-                    [0.00, 0.00, 0.00, 0.00, 0.00, 0.5], # target 4 for "RArm"
-                    [0.17, 0.00, 0.09, 0.00, 0.00, 0.5], # target 4 for "RArm"
-                    [0.17, 0.00, 0.10, 0.00, 0.00, 0.5], # target 4 for "RArm"
-                    [0.17, 0.00, 0.08, 0.00, 0.00, 0.5], # target 4 for "RArm"
-                ]
-            ],
-            timeFactor=0.7)
-
-	nao_speech(["Hi, my name is Naomi, who are you?"], nao_available)
-
-        if nao_available:
-        
-            move_right_arm([
-                    [	# Right arm
-                    [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-                    [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-                    [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-                    [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-                    [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-                    [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-                    [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-                    [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-                    [0.00, 0.00, -0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-                    [0.00, 0.00, +0.02, 0.00, 0.00, 0.00], # target 4 for "RArm"
-                ]
-            ],
-            timeFactor=0.5)
-
-	nao_speech(["Nice to meet you"], nao_available)
-	nao_speech(["Let's play the hang man game"], nao_available)
-
-        if nao_available:
-
-            move_right_arm([
-                    [
-                    [0.00, 0.00, 0.00, 0.00, 0.00, 0.00],
-                    [-0.11, 0.00, -0.09, 0.00, 0.00, -0.5],
-                    ]
-            ])
-        
-	# Send NAO to Pose Init
-	nao_speech(["Let me sit down first, I'm an old lady"], nao_available)
-
-        if nao_available:
-	    postureProxy.goToPosture("Sit", 0.3)  
+@author: Franziska
+"""
 
 def wave():
 	# Choregraphe bezier export in Python.
@@ -510,4 +310,361 @@ def loser_move():
 
 	time.sleep(1)
 	postureProxy.goToPosture("Sit", 1)  	
+ 
+
+def point_to_phone():
+    names = list()
+    times = list()
+    keys = list()
     
+    names.append("HeadPitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.03371, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("HeadYaw")
+    times.append([ 1.00000])
+    keys.append([ [ -0.01385, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LAnklePitch")
+    times.append([ 1.00000])
+    keys.append([ [ -0.35286, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LAnkleRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00004, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LElbowRoll")
+    times.append([ 1.00000])
+    keys.append([ [ -0.69639, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LElbowYaw")
+    times.append([ 1.00000])
+    keys.append([ [ -2.07401, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHand")
+    times.append([ 1.00000])
+    keys.append([ [ 0.01595, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipPitch")
+    times.append([ 1.00000])
+    keys.append([ [ -0.43715, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipRoll")
+    times.append([ 1.00000])
+    keys.append([ [ -0.00149, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipYawPitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00004, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LKneePitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.69793, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LShoulderPitch")
+    times.append([ 1.00000])
+    keys.append([ [ 1.70423, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LShoulderRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 0.61663, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LWristYaw")
+    times.append([ 1.00000])
+    keys.append([ [ -0.85141, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RAnklePitch")
+    times.append([ 1.00000])
+    keys.append([ [ -0.35124, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RAnkleRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00004, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RElbowRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 1.00174, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RElbowYaw")
+    times.append([ 1.00000])
+    keys.append([ [ 1.36215, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHand")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00017, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipPitch")
+    times.append([ 1.00000])
+    keys.append([ [ -0.43723, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00004, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipYawPitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00004, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RKneePitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.69648, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RShoulderPitch")
+    times.append([ 1.00000])
+    keys.append([ [ 1.43280, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RShoulderRoll")
+    times.append([ 1.00000])
+    keys.append([ [ -0.28076, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RWristYaw")
+    times.append([ 1.00000])
+    keys.append([ [ 0.01837, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    try:
+      # uncomment the following line and modify the IP if you use this script outside Choregraphe.
+      # motion = ALProxy("ALMotion", IP, 9559)
+      motion = ALProxy("ALMotion")
+      motion.angleInterpolationBezier(names, times, keys);
+    except BaseException, err:
+      print err
+      
+def pointing_closet():
+    names = list()
+    times = list()
+    keys = list()
+    
+    names.append("HeadPitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.03371, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("HeadYaw")
+    times.append([ 1.00000])
+    keys.append([ [ -0.00925, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LAnklePitch")
+    times.append([ 1.00000])
+    keys.append([ [ -0.34826, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LAnkleRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00004, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LElbowRoll")
+    times.append([ 1.00000])
+    keys.append([ [ -0.13035, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LElbowYaw")
+    times.append([ 1.00000])
+    keys.append([ [ -0.95572, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHand")
+    times.append([ 1.00000])
+    keys.append([ [ 0.01595, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipPitch")
+    times.append([ 1.00000])
+    keys.append([ [ -0.43715, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipRoll")
+    times.append([ 1.00000])
+    keys.append([ [ -0.00149, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipYawPitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00004, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LKneePitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.69793, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LShoulderPitch")
+    times.append([ 1.00000])
+    keys.append([ [ -0.04299, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LShoulderRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 0.57828, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LWristYaw")
+    times.append([ 1.00000])
+    keys.append([ [ -0.36820, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RAnklePitch")
+    times.append([ 1.00000])
+    keys.append([ [ -0.35124, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RAnkleRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00004, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RElbowRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 0.99407, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RElbowYaw")
+    times.append([ 1.00000])
+    keys.append([ [ 1.36215, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHand")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00017, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipPitch")
+    times.append([ 1.00000])
+    keys.append([ [ -0.43723, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00004, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipYawPitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00004, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RKneePitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.70108, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RShoulderPitch")
+    times.append([ 1.00000])
+    keys.append([ [ 1.44507, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RShoulderRoll")
+    times.append([ 1.00000])
+    keys.append([ [ -0.27923, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RWristYaw")
+    times.append([ 1.00000])
+    keys.append([ [ 0.01837, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    try:
+      # uncomment the following line and modify the IP if you use this script outside Choregraphe.
+      # motion = ALProxy("ALMotion", IP, 9559)
+      motion = ALProxy("ALMotion")
+      motion.angleInterpolationBezier(names, times, keys);
+    except BaseException, err:
+      print err
+      
+    time.sleep(1)
+    
+
+def sad():
+    names = list()
+    times = list()
+    keys = list()
+    
+    names.append("HeadPitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.51487, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("HeadYaw")
+    times.append([ 1.00000])
+    keys.append([ [ -0.03532, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LAnklePitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.84519, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LAnkleRoll")
+    times.append([ 1.00000])
+    keys.append([ [ -0.02143, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LElbowRoll")
+    times.append([ 1.00000])
+    keys.append([ [ -1.20108, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LElbowYaw")
+    times.append([ 1.00000])
+    keys.append([ [ -0.44030, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHand")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00523, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipPitch")
+    times.append([ 1.00000])
+    keys.append([ [ -1.57691, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 0.27003, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipYawPitch")
+    times.append([ 1.00000])
+    keys.append([ [ -0.60282, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LKneePitch")
+    times.append([ 1.00000])
+    keys.append([ [ 1.39590, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LShoulderPitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.92649, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LShoulderRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 0.23926, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LWristYaw")
+    times.append([ 1.00000])
+    keys.append([ [ 0.03524, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RAnklePitch")
+    times.append([ 1.00000])
+    keys.append([ [ 0.84221, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RAnkleRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 0.01998, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RElbowRoll")
+    times.append([ 1.00000])
+    keys.append([ [ 1.23951, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RElbowYaw")
+    times.append([ 1.00000])
+    keys.append([ [ 0.51078, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHand")
+    times.append([ 1.00000])
+    keys.append([ [ 0.00565, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipPitch")
+    times.append([ 1.00000])
+    keys.append([ [ -1.57239, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipRoll")
+    times.append([ 1.00000])
+    keys.append([ [ -0.26074, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipYawPitch")
+    times.append([ 1.00000])
+    keys.append([ [ -0.60282, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RKneePitch")
+    times.append([ 1.00000])
+    keys.append([ [ 1.40825, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RShoulderPitch")
+    times.append([ 1.00000])
+    keys.append([ [ 1.01095, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RShoulderRoll")
+    times.append([ 1.00000])
+    keys.append([ [ -0.26849, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RWristYaw")
+    times.append([ 1.00000])
+    keys.append([ [ -0.02612, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    try:
+      # uncomment the following line and modify the IP if you use this script outside Choregraphe.
+      # motion = ALProxy("ALMotion", IP, 9559)
+      motion = ALProxy("ALMotion")
+      motion.angleInterpolationBezier(names, times, keys);
+    except BaseException, err:
+      print err
+      
+    time.sleep(1)  
+    postureProxy.goToPosture("Sit", 1)
