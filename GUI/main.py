@@ -67,16 +67,17 @@ class VBoxWidget(Widget):
     def update_game_status(self, req, results):
 
         word_status = results["word_status"]
+
         game_status = results["game_status"]
         guessed_letters = results["guessed_letters"]
 
         # Update guessed status
-        word_status = self.ids.word_status
-        word_status.text = word_status
+        word_status_label = self.ids.word_status
+        word_status_label.text = word_status
         
         # Update guessed status
-        guessed_letters = self.ids.guessed_letters
-        guessed_letters.text = guessed_letters
+        guessed_letters_label = self.ids.guessed_letters
+        guessed_letters_label.text = guessed_letters
 
         # Update hangman drawing
         # TODO !

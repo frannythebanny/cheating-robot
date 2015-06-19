@@ -4,15 +4,10 @@ import numpy as np
 import os
 
 import random
-import motion
+
 import evilhangman
 import os
 
-from naoqi import ALProxy
-from naoqi import ALBroker
-from naoqi import ALModule
-
-from optparse import OptionParser
 from hangman_speechevent import SpeechEventModule
 import socialInteraction_fran
 import send_request
@@ -21,7 +16,7 @@ import time
 
 
 # Good for debugging because then we can test it without having the nao
-NAO_AVAILABLE = True
+NAO_AVAILABLE = False
 DO_SOCIAL_INTERACTION = True
 game_variant = 0
 
@@ -29,11 +24,17 @@ game_variant = 0
 NAO_IP = "10.0.1.5" if NAO_AVAILABLE else "localhost"
 NAO_PORT = 9559
 
-ledsProxy = ALProxy("ALLeds", NAO_IP, 9559)         
-
 if NAO_AVAILABLE:
     global memory
     memory = ALProxy('ALMemory', NAO_IP, NAO_PORT)
+    ledsProxy = ALProxy("ALLeds", NAO_IP, 9559)
+
+    from naoqi import ALProxy
+    from naoqi import ALBroker
+    from naoqi import ALModule
+    import motion
+    from optparse import OptionParser
+
 
 # Naos sentences:
 
@@ -120,11 +121,11 @@ def main():
            pip,         # parent broker IP
            pport)       # parent broker port
 
+
     # Do the social interaction in the beginning
     if DO_SOCIAL_INTERACTION:
         socialInteraction_fran.greeting(NAO_AVAILABLE)
-
-
+        
     # Start the game
     socialInteraction_fran.nao_speech(["Okay, let's start with the hang man game"], NAO_AVAILABLE)
     socialInteraction_fran.nao_speech(["Let me think about a word"], NAO_AVAILABLE)
