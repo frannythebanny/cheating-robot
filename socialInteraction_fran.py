@@ -20,13 +20,11 @@ import time
 NAO_IP = "169.254.95.24"
 NAO_IP = "10.0.1.5"
 NAO_PORT = 9559
+NAO_AVAILABLE = False # fro debugging without the NAO
+
+
 name = "Fran"
 
-# Initialize proxies
-
-
-# Good for debugging because then we can test it without having the nao
-NAO_AVAILABLE = True
 
 if NAO_AVAILABLE:
     global tts
@@ -334,10 +332,7 @@ def greeting(nao_available=True):
         please ask the experimenter. I will take a short break in the meantime.'''], nao_available)
         #TODO: get a keyboard interrupt
         print('interrupt me')
-
-if __name__ == "__main__":
-	greeting()
-
+        
 
 def move_right_arm(rawTargetCoordinateList, timeFactor=1, isAbsolute=False):
 	
@@ -388,52 +383,52 @@ def move_right_arm(rawTargetCoordinateList, timeFactor=1, isAbsolute=False):
 
 def move_both_arms(rawTargetCoordinateList, timeFactor=1, isAbsolute=False):
 	
-	# Set NAO in Stiffness On
-	StiffnessOn(motionProxy)
+    # Set NAO in Stiffness On
+    StiffnessOn(motionProxy)
 
-	# Get NAOs space
-	space = motion.FRAME_ROBOT
+    # Get NAOs space
+    space = motion.FRAME_ROBOT
 
-	useSensor = False
-	effectorInit = np.array(motionProxy.getPosition("RArm", space, useSensor))
+    useSensor = False
+    effectorInit = np.array(motionProxy.getPosition("RArm", space, useSensor))
 
-	targetCoordinateList = (effectorInit + np.array(rawTargetCoordinateList)).tolist()
+    targetCoordinateList = (effectorInit + np.array(rawTargetCoordinateList)).tolist()
 
-	# Since the line above does not seem to work
-	targetCoordinateList = rawTargetCoordinateList
+    # Since the line above does not seem to work
+    targetCoordinateList = rawTargetCoordinateList
 
-	effectorList = ["RArm", "LArm"]
+    effectorList = ["RArm", "LArm"]
 
-	# Enable Whole Body Balancer
-	isEnabled  = True
-	motionProxy.wbEnable(isEnabled)
+    # Enable Whole Body Balancer
+    isEnabled  = True
+    motionProxy.wbEnable(isEnabled)
 
-	# Legs are constrained fixed
-	stateName  = "Fixed"
-	supportLeg = "Legs"
-	motionProxy.wbFootState(stateName, supportLeg)
+    # Legs are constrained fixed
+    stateName  = "Fixed"
+    supportLeg = "Legs"
+    motionProxy.wbFootState(stateName, supportLeg)
 
-	# Constraint Balance Motion
-	isEnable   = True
-	supportLeg = "Legs"
-	motionProxy.wbEnableBalanceConstraint(isEnable, supportLeg)
+    # Constraint Balance Motion
+    isEnable   = True
+    supportLeg = "Legs"
+    motionProxy.wbEnableBalanceConstraint(isEnable, supportLeg)
 
-	axisMaskList = [almath.AXIS_MASK_VEL,
-					almath.AXIS_MASK_VEL,] # for "RArm"
+    axisMaskList = [almath.AXIS_MASK_VEL,
+                                    almath.AXIS_MASK_VEL,] # for "RArm"
 
-	# Determine the time stamps for the movements of the arm
-	timesList  = [
-		[timeFactor * (i+1) for i in range(len(targetCoordinateList[0]))],
-		[timeFactor * (i+1) for i in range(len(targetCoordinateList[1]))]
-		] # for "RArm" in seconds
+    # Determine the time stamps for the movements of the arm
+    timesList  = [
+            [timeFactor * (i+1) for i in range(len(targetCoordinateList[0]))],
+            [timeFactor * (i+1) for i in range(len(targetCoordinateList[1]))]
+            ] # for "RArm" in seconds
 
-	 # called cartesian interpolation
-	motionProxy.positionInterpolations(effectorList, space, targetCoordinateList,
-	                             axisMaskList, timesList, isAbsolute)
+     # called cartesian interpolation
+    motionProxy.positionInterpolations(effectorList, space, targetCoordinateList,
+                                 axisMaskList, timesList, isAbsolute)
 
-	# Deactivate whole body
-	isEnabled    = False
-	motionProxy.wbEnable(isEnabled)
+    # Deactivate whole body
+    isEnabled    = False
+    motionProxy.wbEnable(isEnabled)
  
 def pointing_closet():
     names = list()
@@ -679,26 +674,26 @@ def sad():
 
 
 def onTouched(strVarName, value):
-        """ This will be called each time a touch
-        is detected.
+    """ This will be called each time a touch
+    is detected.
 
-        """
-        # Unsubscribe to the event when talking,
-        # to avoid repetitions
-        memory.unsubscribeToEvent("TouchChanged",
-            "ReactToTouch")
+    """
+    # Unsubscribe to the event when talking,
+    # to avoid repetitions
+    memory.unsubscribeToEvent("TouchChanged",
+        "ReactToTouch")
 
-        touched_bodies = []
-        for p in value:
-            if p[1]:
-                touched_bodies.append(p[0])
+    touched_bodies = []
+    for p in value:
+        if p[1]:
+            touched_bodies.append(p[0])
 
-        say(touched_bodies)
+    say(touched_bodies)
 
-        # Subscribe again to the event
-        memory.subscribeToEvent("TouchChanged",
-            "ReactToTouch",
-            "onTouched")
+    # Subscribe again to the event
+    memory.subscribeToEvent("TouchChanged",
+        "ReactToTouch",
+        "onTouched")
 
 def say(bodies):
     if (bodies == []):
@@ -716,3 +711,8 @@ def say(bodies):
     sentence = sentence + " touched."
     
     nao_speech([sentence], nao_available)
+
+
+if __name__ == "__main__":
+	greeting()
+    
