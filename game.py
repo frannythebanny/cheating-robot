@@ -5,7 +5,7 @@ import os
 
 import random
 import motion
-
+import evilhangman
 import os
 
 from naoqi import ALProxy
@@ -22,6 +22,8 @@ import time
 
 # Good for debugging because then we can test it without having the nao
 NAO_AVAILABLE = True
+DO_SOCIAL_INTERACTION = True
+game_variant = 0
 
 # NAO's IP address
 NAO_IP = "10.0.1.5" if NAO_AVAILABLE else "localhost"
@@ -104,7 +106,7 @@ def main():
         parser.set_defaults(
             pip=NAO_IP,
             pport=NAO_PORT)
-
+            
         (opts, args_) = parser.parse_args()
         pip   = opts.pip
         pport = opts.pport
@@ -118,13 +120,14 @@ def main():
            pip,         # parent broker IP
            pport)       # parent broker port
 
-    # Initialze
-    socialInteraction_fran.greeting(NAO_AVAILABLE)
+    # Do the social interaction in the beginning
+    if DO_SOCIAL_INTERACTION:
+        socialInteraction_fran.greeting(NAO_AVAILABLE)
 
 
     # Start the game
-    social_interaction.nao_speech(["Okay, let's start with the hang man game"], NAO_AVAILABLE)
-    social_interaction.nao_speech(["Let me think about a word"], NAO_AVAILABLE)
+    socialInteraction_fran.nao_speech(["Okay, let's start with the hang man game"], NAO_AVAILABLE)
+    socialInteraction_fran.nao_speech(["Let me think about a word"], NAO_AVAILABLE)
 
 
     if NAO_AVAILABLE:
@@ -134,14 +137,19 @@ def main():
         ledsProxy.fadeRGB("FaceLeds", 44 * 1 * 255, 1)
         ledsProxy.fadeRGB("FaceLeds", 226 * 245 * 222, 1)
 
-    social_interaction.nao_speech(["Okay got one"], NAO_AVAILABLE)
+    socialInteraction_fran.nao_speech(["Okay got one"], NAO_AVAILABLE)
     time.sleep(1)
 
     # Read list of words for hangman  
-    dictionary = pd.read_csv(os.path.join("dictionaries", "dict_en.txt"), sep = '\n').iloc[:, 0].values.tolist()
+    dictionary = pd.read_csv(os.path.join("dictionaries", "nounlist.txt"), sep = '\n').iloc[:, 0].values.tolist()
     
     # Create an instance of a hangman game
-    hangman_game = hangman.Hangman(dictionary)
+    if game_variant == 0:
+        hangman_game = hangman.Hangman(dictionary)
+    elif game_variant == 1:
+        hangman_game = evilhangman.Cheaterhangman(dictionary, True)
+    elif game_variant == 2:
+        hangman_game = evilhangman.Cheaterhangman(dictionary, False)
 
 
     i = 0  # Counter for while loop
@@ -156,14 +164,14 @@ def main():
         if i == 0:
             # For example: "Please guess a letter"
             # First guess
-            social_interaction.nao_speech(["Please make your first guess"], NAO_AVAILABLE)
+            socialInteraction_fran.nao_speech(["Please make your first guess"], NAO_AVAILABLE)
 
         elif user_canceled:
-            social_interaction.nao_speech(ask_repeat, NAO_AVAILABLE)
+            socialInteraction_fran.nao_speech(ask_repeat, NAO_AVAILABLE)
             user_canceled = False
 
         else:
-            social_interaction.nao_speech(text_guess_letter, NAO_AVAILABLE)
+            socialInteraction_fran.nao_speech(text_guess_letter, NAO_AVAILABLE)
         
             
         if NAO_AVAILABLE:
@@ -183,11 +191,16 @@ def main():
             # Text input
             guess_long = raw_input("DEBUG: Please make a guess (from NATO alphabet):   ")
 
+
+        SpeechEventListener.unsubscribeFromMemory()            
+        
+        print("Guess_long is", guess_long)
+
         # Get letter based on NATO word
         if guess_long in alphabet.index:
             guess = alphabet[guess_long]
         else:
-           social_interaction.nao_speech(["This letter is not part of the Nato alphabet"],
+           socialInteraction_fran.nao_speech(["This letter is not part of the Nato alphabet"],
                                          NAO_AVAILABLE)
            i += 1
            continue
@@ -200,7 +213,7 @@ def main():
 
         # Repeat letter
         repeat_letter = [sentence + guess + '?' for sentence in text_repeat]
-        social_interaction.nao_speech(repeat_letter, NAO_AVAILABLE)
+        socialInteraction_fran.nao_speech(repeat_letter, NAO_AVAILABLE)
 
         if NAO_AVAILABLE:
             # Start to listen for confirmation
@@ -224,41 +237,48 @@ def main():
                 user_canceled = True
                 i += 1
                 continue
+            
+            SpeechEventListener2.unsubscribeFromMemory()
 
         # Determine if letter was in word
-        letter_was_in_word = hangman_game.make_guess(guess)
+
+        # Difference evil / good!
+
+        if game_variant == 0:
+            letter_was_in_word = hangman_game.make_guess(guess)
+        else:
+            letter_was_in_word = hangman_game.update_family(guess)
 
         # Determine status of the letter (0: wrong, 1: right, 2: repeated)
         if letter_was_in_word == 1:
-            social_interaction.nao_speech(text_guess_right, NAO_AVAILABLE)
+            socialInteraction_fran.nao_speech(text_guess_right, NAO_AVAILABLE)
 
         if letter_was_in_word == 2:
-            social_interaction.nao_speech(text_guess_repeated_letter, NAO_AVAILABLE)
+            socialInteraction_fran.nao_speech(text_guess_repeated_letter, NAO_AVAILABLE)
 
         if letter_was_in_word == 0:
-            social_interaction.nao_speech(text_guess_wrong, NAO_AVAILABLE)
+            socialInteraction_fran.nao_speech(text_guess_wrong, NAO_AVAILABLE)
 
-        hangman_game.print_status()
 
         status = hangman_game.get_status()
 
         # Determine game status
         if status == 0:
-            social_interaction.nao_speech(text_loser, NAO_AVAILABLE)
+            socialInteraction_fran.nao_speech(text_loser, NAO_AVAILABLE)
             if NAO_AVAILABLE:
-                social_interaction.winner_move()
+                socialInteraction_fran.winner_move()
         if status == 1:
-            social_interaction.nao_speech(text_winner, NAO_AVAILABLE)
+            socialInteraction_fran.nao_speech(text_winner, NAO_AVAILABLE)
             if NAO_AVAILABLE:
-                social_interaction.loser_move()
+                socialInteraction_fran.loser_move()
 
         i += 1
 
     
-    social_interaction.nao_speech(["This is the end, my friend. Bye bye, H R I people"], NAO_AVAILABLE)
+    socialInteraction_fran.nao_speech(["This is the end, my friend. Bye bye, H R I people"], NAO_AVAILABLE)
 
     if NAO_AVAILABLE:
-        social_interaction.wave()
+        socialInteraction_fran.wave()
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,5 @@
 import random
+import send_request
 
 # Note: self.dictionary (or a similiar variable) should be updated, after a guess is made
 
@@ -107,6 +108,12 @@ class Cheaterhangman:
         else:
             self.guessed_wrong_letters.append(guess)
             letter_was_in_word = 0
+    
+            
+        # Send word status to GUI
+        send_request.send_status_to_GUI(self.status,
+                           self.guessed_wrong_letters,
+                           len(self.guessed_wrong_letters))
 
         return letter_was_in_word
             

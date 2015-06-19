@@ -1,5 +1,5 @@
 import random
-
+import send_request
 
 class Hangman:
 
@@ -8,6 +8,7 @@ class Hangman:
         self.word = self.random_word()
         self.guessed_right_letters = set()
         self.guessed_wrong_letters = []
+        self.status = ""
 
     def random_word(self):
         """ Pick a random word from the dictionary"""
@@ -48,6 +49,14 @@ class Hangman:
 
             else:
                 self.guessed_wrong_letters.append(guess)
+                
+        self.status = self.print_status()
+        
+        # Send word status to GUI
+        send_request.send_status_to_GUI(self.status,
+                           self.guessed_wrong_letters,
+                           len(self.guessed_wrong_letters))
+
 
         return letter_was_in_word
 
@@ -61,8 +70,10 @@ class Hangman:
                 output.append(l)
             else:
                 output.append("_")
+        
 
         print(''.join(output))
+        return ''.join(output)
 
     def get_status(self):
 

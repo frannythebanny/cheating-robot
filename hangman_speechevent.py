@@ -13,16 +13,15 @@ class SpeechEventModule(ALModule):
         ALModule.__init__(self, name)
 
         global memory
+        
         self.memory = ALProxy('ALMemory', NAO_IP, 9559)
-
         self.module_name = name
-
         self.asr = ALProxy("ALSpeechRecognition", NAO_IP, 9559)
             
         try:
             self.asr.setLanguage("English")
             self.asr.setVocabulary(vocabulary, False)
-        except Exception, e:
+        except:
             pass
         
         self.listen()
@@ -30,9 +29,16 @@ class SpeechEventModule(ALModule):
     def listen(self):
         try:
             self.memory.unsubscribeToEvent("WordRecognized", self.module_name)
-        except Exception, e:
+        except:
             pass
         self.memory.subscribeToEvent("WordRecognized", self.module_name, "onWordRecognized")
+    
+    def unsubscribeFromMemory(self):
+        
+        try:
+            self.memory.unsubscribeToEvent("WordRecognized", self.module_name)
+        except:
+            pass
 
     def onWordRecognized(self, key, value, message):
         """ does this and that """
@@ -41,4 +47,4 @@ class SpeechEventModule(ALModule):
         print "Key: ", key
         print "Value: " , value
         print "Message: " , message
-        memory.unsubscribeToEvent("WordRecognized", self.module_name)
+        self.memory.unsubscribeToEvent("WordRecognized", self.module_name)
