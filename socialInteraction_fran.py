@@ -20,11 +20,13 @@ import time
 NAO_IP = "169.254.95.24"
 NAO_IP = "10.0.1.5"
 NAO_PORT = 9559
-NAO_AVAILABLE = False # for debugging without the NAO
-
-
 name = "Fran"
 
+# Initialize proxies
+
+
+# Good for debugging because then we can test it without having the nao
+NAO_AVAILABLE = True
 
 if NAO_AVAILABLE:
     global tts
@@ -43,6 +45,8 @@ if NAO_AVAILABLE:
     fb_vocabulary = fb_dict.keys().tolist()
     
     
+    
+
 def nao_speech(possible_sentences, nao_available=True):
     """
     Let Nao randomly select one of the possible sentences and speak them out loud
@@ -78,7 +82,6 @@ def greeting(nao_available=True):
     postureProxy.goToPosture("Sit", 1)
     
 
-<<<<<<< HEAD
 ## Start social interaction
 #    nao_speech(["Finally someone who wants to play with me"], nao_available)
 #    
@@ -352,27 +355,6 @@ def greeting(nao_available=True):
 if __name__ == "__main__":
 	greeting()
 
-=======
-    if nao_available:
-        
-            SpeechEventListener.listen()
-            # Wait for first input
-            while True:
-                guess_long = memory.getData("WordRecognized")[0]
-                if guess_long != '':
-                    break
-                time.sleep(0.33)  
-        
-            if guess_long in fb_dict.index:
-                guess = fb_dict[guess_long]
-        
-    if guess == 'No':
-        nao_speech(['''If you have any further questions regarding the game, 
-        please ask the experimenter. I will take a short break in the meantime.'''], nao_available)
-        #TODO: get a keyboard interrupt
-        print('interrupt me')
-        
->>>>>>> origin/master
 
 def move_right_arm(rawTargetCoordinateList, timeFactor=1, isAbsolute=False):
 	
@@ -423,52 +405,52 @@ def move_right_arm(rawTargetCoordinateList, timeFactor=1, isAbsolute=False):
 
 def move_both_arms(rawTargetCoordinateList, timeFactor=1, isAbsolute=False):
 	
-    # Set NAO in Stiffness On
-    StiffnessOn(motionProxy)
+	# Set NAO in Stiffness On
+	StiffnessOn(motionProxy)
 
-    # Get NAOs space
-    space = motion.FRAME_ROBOT
+	# Get NAOs space
+	space = motion.FRAME_ROBOT
 
-    useSensor = False
-    effectorInit = np.array(motionProxy.getPosition("RArm", space, useSensor))
+	useSensor = False
+	effectorInit = np.array(motionProxy.getPosition("RArm", space, useSensor))
 
-    targetCoordinateList = (effectorInit + np.array(rawTargetCoordinateList)).tolist()
+	targetCoordinateList = (effectorInit + np.array(rawTargetCoordinateList)).tolist()
 
-    # Since the line above does not seem to work
-    targetCoordinateList = rawTargetCoordinateList
+	# Since the line above does not seem to work
+	targetCoordinateList = rawTargetCoordinateList
 
-    effectorList = ["RArm", "LArm"]
+	effectorList = ["RArm", "LArm"]
 
-    # Enable Whole Body Balancer
-    isEnabled  = True
-    motionProxy.wbEnable(isEnabled)
+	# Enable Whole Body Balancer
+	isEnabled  = True
+	motionProxy.wbEnable(isEnabled)
 
-    # Legs are constrained fixed
-    stateName  = "Fixed"
-    supportLeg = "Legs"
-    motionProxy.wbFootState(stateName, supportLeg)
+	# Legs are constrained fixed
+	stateName  = "Fixed"
+	supportLeg = "Legs"
+	motionProxy.wbFootState(stateName, supportLeg)
 
-    # Constraint Balance Motion
-    isEnable   = True
-    supportLeg = "Legs"
-    motionProxy.wbEnableBalanceConstraint(isEnable, supportLeg)
+	# Constraint Balance Motion
+	isEnable   = True
+	supportLeg = "Legs"
+	motionProxy.wbEnableBalanceConstraint(isEnable, supportLeg)
 
-    axisMaskList = [almath.AXIS_MASK_VEL,
-                                    almath.AXIS_MASK_VEL,] # for "RArm"
+	axisMaskList = [almath.AXIS_MASK_VEL,
+					almath.AXIS_MASK_VEL,] # for "RArm"
 
-    # Determine the time stamps for the movements of the arm
-    timesList  = [
-            [timeFactor * (i+1) for i in range(len(targetCoordinateList[0]))],
-            [timeFactor * (i+1) for i in range(len(targetCoordinateList[1]))]
-            ] # for "RArm" in seconds
+	# Determine the time stamps for the movements of the arm
+	timesList  = [
+		[timeFactor * (i+1) for i in range(len(targetCoordinateList[0]))],
+		[timeFactor * (i+1) for i in range(len(targetCoordinateList[1]))]
+		] # for "RArm" in seconds
 
-     # called cartesian interpolation
-    motionProxy.positionInterpolations(effectorList, space, targetCoordinateList,
-                                 axisMaskList, timesList, isAbsolute)
+	 # called cartesian interpolation
+	motionProxy.positionInterpolations(effectorList, space, targetCoordinateList,
+	                             axisMaskList, timesList, isAbsolute)
 
-    # Deactivate whole body
-    isEnabled    = False
-    motionProxy.wbEnable(isEnabled)
+	# Deactivate whole body
+	isEnabled    = False
+	motionProxy.wbEnable(isEnabled)
  
 def pointing_closet():
     names = list()
@@ -831,7 +813,6 @@ def handshake():
     except BaseException, err:
       print err
 
-<<<<<<< HEAD
 def move_arm_up():
         # Choregraphe bezier export in Python.
     from naoqi import ALProxy
@@ -842,33 +823,6 @@ def move_arm_up():
     names.append("HeadPitch")
     times.append([ 1.00000])
     keys.append([ [ 0.02143, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
-=======
-def onTouched(strVarName, value):
-    """ This will be called each time a touch
-    is detected.
-
-    """
-    # Unsubscribe to the event when talking,
-    # to avoid repetitions
-    memory.unsubscribeToEvent("TouchChanged",
-        "ReactToTouch")
-
-    touched_bodies = []
-    for p in value:
-        if p[1]:
-            touched_bodies.append(p[0])
-
-    say(touched_bodies)
-
-    # Subscribe again to the event
-    memory.subscribeToEvent("TouchChanged",
-        "ReactToTouch",
-        "onTouched")
-
-def say(bodies):
-    if (bodies == []):
-        return
->>>>>>> origin/master
     
     names.append("HeadYaw")
     times.append([ 1.00000])
@@ -906,7 +860,6 @@ def say(bodies):
     times.append([ 1.00000])
     keys.append([ [ 0.00004, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
     
-<<<<<<< HEAD
     names.append("LKneePitch")
     times.append([ 1.00000])
     keys.append([ [ 0.69946, [ 3, -0.33333, 0.00000], [ 3, 0.00000, 0.00000]]])
@@ -1522,11 +1475,3 @@ def loser_move():
 
 	time.sleep(1)
 	postureProxy.goToPosture("Sit", 1)  
-=======
-    nao_speech([sentence], nao_available)
-
-
-if __name__ == "__main__":
-	greeting()
-    
->>>>>>> origin/master
