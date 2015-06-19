@@ -5,6 +5,8 @@ import numpy as np
 import random
 import motion
 
+import os
+
 from naoqi import ALProxy
 from naoqi import ALBroker
 from naoqi import ALModule

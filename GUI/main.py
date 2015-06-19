@@ -38,14 +38,15 @@ class HBoxWidget(Widget):
         self.l8_width = 0.0001
         self.l9_width = 0.0001
         
-                       
+        print(self.ids)
+        
         self.update_hangman(5)
 
 
     def update_hangman(self, lines_to_draw):
 
         for i in range(lines_to_draw):
-            setattr(self, 'l' + str(i) = '_width', 2)
+            setattr(self, 'l' + str(i) + '_width', 2)
 
         
 class VBoxWidget(Widget):
@@ -64,11 +65,22 @@ class VBoxWidget(Widget):
         Clock.schedule_interval(self.get_game_status, 2)
 
     def update_game_status(self, req, results):
-        text = results["word_status"]
 
+        word_status = results["word_status"]
+        game_status = results["game_status"]
+        guessed_letters = results["guessed_letters"]
+
+        # Update guessed status
+        word_status = self.ids.word_status
+        word_status.text = word_status
         
-        game_state = self.ids.game_state
-        game_state.text = text
+        # Update guessed status
+        guessed_letters = self.ids.guessed_letters
+        guessed_letters.text = guessed_letters
+
+        # Update hangman drawing
+        # TODO !
+
         
     def get_game_status(self, dt):
 

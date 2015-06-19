@@ -5,13 +5,13 @@ import random
 class Cheaterhangman:
 
     def __init__(self, dictionary, evil=True):
-        self.dictionary = dictionary
-        self.evil = evil
+        self.dictionary = dictionary # Dictionary of hangman words
+        self.evil = evil # Is the game evil or good
         
-        self.family = dictionary  
-        self.status = ""
-        self.guessed_right_letters = set()
-        self.guessed_wrong_letters = []
+        self.family = dictionary # Set the initial family to the entire dictionary 
+        self.status = "" # Intitialize game status
+        self.guessed_right_letters = set() # Correct letters the the player has guessed
+        self.guessed_wrong_letters = []  # Incorrect letters
 
 
     def initialize(self, word_length):
@@ -27,8 +27,8 @@ class Cheaterhangman:
         
     def create_families(self, guess):
         """
-        Take a list of currently possible words and a guess and
-        determine the word families 
+        Take a a guess and determine the word families based on the 
+        list of currently possible words.
         """ 
         
         families = {}
@@ -43,7 +43,6 @@ class Cheaterhangman:
             else:
                 families[family] = set([word])
 
-        print(families)
         return families
 
 
@@ -88,15 +87,14 @@ class Cheaterhangman:
         if sub_families:
             largestkey = max(sub_families, key=lambda x: len(sub_families[x]))
             largestvalue = sub_families[largestkey]
-            print(sub_families[largestkey])
+            # print(sub_families[largestkey])
         else:
             largestkey = max(families, key=lambda x: len(families[x]))
             largestvalue = families[largestkey]
-            print(families[largestkey])
+            # print(families[largestkey])
         
         self.family = largestvalue
         self.status = largestkey
-        print(largestvalue)
 
         # Determine if letter has been guessed before.
         if guess in self.guessed_right_letters or guess in self.guessed_wrong_letters:
@@ -125,7 +123,6 @@ class Cheaterhangman:
                 output.append("_")
 
         status = ''.join(output)
-        print(status)
         return status
 
 

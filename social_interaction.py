@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 import random
-import motion
+# import motion
 import almath
 
 from naoqi import ALProxy

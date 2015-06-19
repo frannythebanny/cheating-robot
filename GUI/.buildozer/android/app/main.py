@@ -9,6 +9,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.widget import Widget
+from kivy.graphics import Color, Line
 
 from kivy.network.urlrequest import UrlRequest
 from kivy.logger import Logger
@@ -25,7 +26,28 @@ class HBoxWidget(Widget):
     """
     def __init__(self, **kwargs):
         super(HBoxWidget, self).__init__(**kwargs)
+
+        self.l0_width = 0.0001
+        self.l1_width = 0.0001
+        self.l2_width = 0.0001
+        self.l3_width = 0.0001
+        self.l4_width = 0.0001
+        self.l5_width = 0.0001
+        self.l6_width = 0.0001
+        self.l7_width = 0.0001
+        self.l8_width = 0.0001
+        self.l9_width = 0.0001
         
+        print(self.ids)
+        
+        self.update_hangman(5)
+
+
+    def update_hangman(self, lines_to_draw):
+
+        for i in range(lines_to_draw):
+            setattr(self, 'l' + str(i) + '_width', 2)
+
         
 class VBoxWidget(Widget):
     """Documentation for VBoxWidget
@@ -34,8 +56,7 @@ class VBoxWidget(Widget):
     def __init__(self, **kwargs):
         super(VBoxWidget, self).__init__(**kwargs)
         self.start_thread()
-
-
+        
     def start_thread(self):
         threading.Thread(target=self.get_text_thread, args=()).start()
 
@@ -44,10 +65,22 @@ class VBoxWidget(Widget):
         Clock.schedule_interval(self.get_game_status, 2)
 
     def update_game_status(self, req, results):
-        text = results["word_status"]
 
-        game_state = self.ids.game_state
-        game_state.text = text
+        word_status = results["word_status"]
+        game_status = results["game_status"]
+        guessed_letters = results["guessed_letters"]
+
+        # Update guessed status
+        word_status = self.ids.word_status
+        word_status.text = word_status
+        
+        # Update guessed status
+        guessed_letters = self.ids.guessed_letters
+        guessed_letters.text = guessed_letters
+
+        # Update hangman drawing
+        # TODO !
+
         
     def get_game_status(self, dt):
 
