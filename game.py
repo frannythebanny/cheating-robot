@@ -4,20 +4,18 @@ import numpy as np
 import os
 
 import random
-
 import evilhangman
 import os
 
-from hangman_speechevent import SpeechEventModule
+
 import socialInteraction_fran
 import send_request
-
 import time
 
 
 # Good for debugging because then we can test it without having the nao
 NAO_AVAILABLE = False
-DO_SOCIAL_INTERACTION = True
+DO_SOCIAL_INTERACTION = False
 game_variant = 0
 
 # NAO's IP address
@@ -25,6 +23,9 @@ NAO_IP = "10.0.1.5" if NAO_AVAILABLE else "localhost"
 NAO_PORT = 9559
 
 if NAO_AVAILABLE:
+
+    from hangman_speechevent import SpeechEventModule
+    
     global memory
     memory = ALProxy('ALMemory', NAO_IP, NAO_PORT)
     ledsProxy = ALProxy("ALLeds", NAO_IP, 9559)
@@ -188,12 +189,12 @@ def main():
                 # Check three times per second
                 time.sleep(0.33)
 
+            SpeechEventListener.unsubscribeFromMemory()
+
         else:
             # Text input
             guess_long = raw_input("DEBUG: Please make a guess (from NATO alphabet):   ")
 
-
-        SpeechEventListener.unsubscribeFromMemory()            
         
         print("Guess_long is", guess_long)
 

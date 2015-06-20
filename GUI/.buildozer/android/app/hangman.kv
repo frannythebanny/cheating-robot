@@ -1,70 +1,30 @@
-<VBoxWidget>: 
-    BoxLayout:
-        size: root.size
-        pos: root.pos
-        orientation: 'vertical'
+<MyWidget>:
+    FloatLayout:
+        Image:
+            id: hangman_img
+            source: '0.png'
+            size_hint: None, None
+            size: root.height, root.width / 2
+            pos_hint: {'center_x': 0.75, 'center_y': 0.5}
+
         Label:
             id: word_status
             font_size: 50
             text: '_ _ _ _ _'
+            pos_hint: {'center_x': 0.2, 'center_y': 0.8}
 
         Label:
             id: guessed_letters
             font_size: 50
             text: 'A, B, C'
-            
-<HBoxWidget>:
-    BoxLayout:
-        size: root.size
-        pos: root.pos
-        orientation: 'horizontal'
-        canvas:
-            Line:
-                id: l0
-                bezier: [root.center_x - 100, 50, root.center_x + 50, 100, root.center_x + 200, 50]
-                width: root.l0_width
-                                                                                                        
-            Line:                                                                
-                id: l1                                                           
-                bezier: [root.center_x + 50, 70, root.center_x + 50, 500]        
-                width: root.l1_width                                                         
-            Line:                                                                
-                id: l2                                                           
-                bezier: [root.center_x + 50, 500, root.center_x + 250, 500]      
-                width: root.l2_width                                                                                                                   
-            Line:                                                                
-                id: l3                                                           
-                bezier: [root.center_x + 250, 500, root.center_x + 250, 400]     
-                width: root.l3_width                                                         
-            Line:                                                                
-                id: l4                                                           
-                circle: [root.center_x + 250, 350, 50]                           
-                width: root.l4_width                                                                                                                  
-            Line:                                                                
-                id: l5                                                           
-                points: [root.center_x + 250, 300, root.center_x + 250, 150]     
-                width: root.l5_width                                                         
-            Line:                                                                
-                id: l6                                                           
-                points: [root.center_x + 250, 150, root.center_x + 330, 120]     
-                width: root.l6_width                                                         
-            Line:                                                                
-                id: l7                                                           
-                points: [root.center_x + 250, 150, root.center_x + 170, 120]     
-                width: root.l7_width                                                         
-            Line:                                                                
-                id: l8                                                           
-                points: [root.center_x + 250, 250, root.center_x + 330, 170]     
-                width: root.l8_width                                                         
-            Line:                                                                
-                id: l9                                                           
-                points: [root.center_x + 250, 250, root.center_x + 170, 170]     
-                width: root.l9_width                                                         
-                                                                   
-                                                                
+            pos_hint: {'center_x': 0.2, 'center_y': 0.4}
+
+        Label:
+            id: game_over
+            pos_hint: {'center_x': 0.5, 'y': 0.6}
+            font_size: 100
+            text: ''
+            pos_hint: {'center_x': 0.5, 'center_y': 0.1}
+
 <GameView>:
-    VBoxWidget:
-    HBoxWidget:            
-                             
-                
-        
+    MyWidget:
