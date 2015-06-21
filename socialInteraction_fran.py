@@ -4,16 +4,6 @@ import numpy as np
 import os
 
 import random
-import motion
-import almath
-
-from naoqi import ALProxy
-from naoqi import ALBroker
-from naoqi import ALModule
-
-from optparse import OptionParser
-from hangman_speechevent import SpeechEventModule
-
 import time
 
 # NAO's IP address
@@ -22,13 +12,21 @@ NAO_IP = "10.0.1.5"
 NAO_PORT = 9559
 name = "Fran"
 
-# Initialize proxies
-
-
 # Good for debugging because then we can test it without having the nao
-NAO_AVAILABLE = True
+NAO_AVAILABLE = False
 
 if NAO_AVAILABLE:
+
+    from optparse import OptionParser
+    from hangman_speechevent import SpeechEventModule
+
+    import motion
+    import almath
+    
+    from naoqi import ALProxy
+    from naoqi import ALBroker
+    from naoqi import ALModule
+    
     global tts
     global memory
     tts = ALProxy("ALTextToSpeech", NAO_IP, NAO_PORT)
@@ -44,8 +42,6 @@ if NAO_AVAILABLE:
     fb_dict = pd.Series.from_csv(os.path.join("dictionaries", "feedback.csv"), header=0)    
     fb_vocabulary = fb_dict.keys().tolist()
     
-    
-    
 
 def nao_speech(possible_sentences, nao_available=True):
     """
@@ -56,6 +52,7 @@ def nao_speech(possible_sentences, nao_available=True):
     else:
         print(random.choice(possible_sentences))
 
+        
 def StiffnessOn(proxy):
     # We use the "Body" name to signify the collection of all joints
     pNames = "Body"
@@ -331,7 +328,6 @@ def greeting(nao_available=True):
 
 if __name__ == "__main__":
 	greeting()
-
 
 def move_right_arm(rawTargetCoordinateList, timeFactor=1, isAbsolute=False):
 	
@@ -1451,4 +1447,4 @@ def loser_move():
 		print err
 
 	time.sleep(1)
-	postureProxy.goToPosture("Sit", 1)  
+	postureProxy.goToPosture("Sit", 1)         

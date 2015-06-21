@@ -1,68 +1,57 @@
+from __future__ import division
+
 from kivy.app import App
+
 
 from kivy.uix.scatter import Scatter
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+
+from kivy.properties import NumericProperty, ReferenceListProperty,\
+    ObjectProperty
+
+from kivy.base import EventLoop 
 
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.widget import Widget
-from kivy.graphics import Color, Line
+from kivy.graphics import Color, Line, Rectangle
 
 from kivy.network.urlrequest import UrlRequest
 from kivy.logger import Logger
 from kivy.clock import Clock, mainthread
+from kivy.core.window import Window
 
 import time
 import json
 import threading
-
-
-class HBoxWidget(Widget):
-    """Documentation for HBoxWidget
-    
+        
+class MyWidget(FloatLayout):
     """
-    def __init__(self, **kwargs):
-        super(HBoxWidget, self).__init__(**kwargs)
-
-        self.l0_width = 0.0001
-        self.l1_width = 0.0001
-        self.l2_width = 0.0001
-        self.l3_width = 0.0001
-        self.l4_width = 0.0001
-        self.l5_width = 0.0001
-        self.l6_width = 0.0001
-        self.l7_width = 0.0001
-        self.l8_width = 0.0001
-        self.l9_width = 0.0001
-        
-        print(self.ids)
-        
-        self.update_hangman(5)
-
-
-    def update_hangman(self, lines_to_draw):
-
-        for i in range(lines_to_draw):
-            setattr(self, 'l' + str(i) + '_width', 2)
-
-        
-class VBoxWidget(Widget):
-    """Documentation for VBoxWidget
-    
+    Documentation for HBoxWidget
     """
+
     def __init__(self, **kwargs):
-        super(VBoxWidget, self).__init__(**kwargs)
+        super(MyWidget, self).__init__(**kwargs)
+
+        self.pink = (173 / 255, 41 / 255, 110 / 255, 255 / 255)
+        Window.clearcolor = self.pink
+        
         self.start_thread()
-        
+
     def start_thread(self):
         threading.Thread(target=self.get_text_thread, args=()).start()
 
     def get_text_thread(self):
         # call my_callback every 0.5 seconds
         Clock.schedule_interval(self.get_game_status, 2)
+
+
+    def update_hangman(self, lines_to_draw):
+
+        self.ids.hangman_img.source = str(lines_to_draw) + '.png'
 
     def update_game_status(self, req, results):
 
@@ -77,10 +66,19 @@ class VBoxWidget(Widget):
         
         # Update guessed status
         guessed_letters_label = self.ids.guessed_letters
-        guessed_letters_label.text = guessed_letters
+        guessed_letters_label.text = "Guessed:\n" + guessed_letters
 
-        # Update hangman drawing
-        # TODO !
+        # Update game status
+        game_status = results["game_status"]
+        game_over_label = self.ids.game_over
+
+        if game_status == 5:
+            game_over_label.text = "GAME OVER"
+        else:
+            game_over_label.text = ""
+            
+
+        self.update_hangman(game_status)
 
         
     def get_game_status(self, dt):
@@ -90,8 +88,9 @@ class VBoxWidget(Widget):
                          on_success=self.update_game_status,
                          req_headers=headers)
 
+    
             
-class GameView(BoxLayout):
+class GameView(FloatLayout):
     """Documentation for GameView
     
     """
