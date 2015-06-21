@@ -9,13 +9,14 @@ import os
 
 
 import socialInteraction_fran
+import nao_moves
 import send_request
 import time
 
 
 # Good for debugging because then we can test it without having the nao
 NAO_AVAILABLE = False
-DO_SOCIAL_INTERACTION = False
+DO_SOCIAL_INTERACTION = True
 game_variant = 0
 
 # NAO's IP address
@@ -35,6 +36,7 @@ if NAO_AVAILABLE:
     from naoqi import ALModule
     import motion
     from optparse import OptionParser
+    import nao_moves
 
 
 # Naos sentences:
@@ -268,11 +270,11 @@ def main():
         if status == 0:
             socialInteraction_fran.nao_speech(text_loser, NAO_AVAILABLE)
             if NAO_AVAILABLE:
-                socialInteraction_fran.winner_move()
+                nao_moves.winner_move()
         if status == 1:
             socialInteraction_fran.nao_speech(text_winner, NAO_AVAILABLE)
             if NAO_AVAILABLE:
-                socialInteraction_fran.loser_move()
+                nao_moves.loser_move()
 
         i += 1
 
@@ -280,7 +282,7 @@ def main():
     socialInteraction_fran.nao_speech(["This is the end, my friend. Bye bye, H R I people"], NAO_AVAILABLE)
 
     if NAO_AVAILABLE:
-        socialInteraction_fran.wave()
+        nao_moves.wave()
 
 if __name__ == "__main__":
     main()
