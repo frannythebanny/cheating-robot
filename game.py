@@ -154,6 +154,7 @@ def main():
         hangman_game = evilhangman.Cheaterhangman(dictionary, False)
 
 
+
     i = 0  # Counter for while loop
     user_canceled = False
     status = 2 # 2 means game is running

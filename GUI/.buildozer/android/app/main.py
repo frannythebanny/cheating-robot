@@ -2,7 +2,7 @@ from __future__ import division
 
 from kivy.app import App
 
-
+from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.scatter import Scatter
 from kivy.uix.button import Button
 from kivy.uix.label import Label
@@ -27,7 +27,49 @@ from kivy.core.window import Window
 import time
 import json
 import threading
+import urllib
+import urllib2
+
+
+class SettingsScreen(Screen):
+
+    def __init__(self, **kwargs):
+        super(SettingsScreen, self).__init__(**kwargs)
+
+    
+    def send_settings(self, participant_name, participant_number):
         
+        params = {
+            'participant_name': str(participant_name),
+            'participant_number': int(participant_number)}
+
+        data = json.dumps(params)
+
+        url = 'http://195.169.210.194:1234/settings'
+        headers = {'Content-type': 'application/json'}
+        
+        req = UrlRequest(url,
+                         req_headers=headers,
+                         req_body=data,
+                         method='PUT')
+
+        req.wait()
+
+class GameScreen(Screen):
+    def __init__(self, **kwargs):
+        super(GameScreen, self).__init__(**kwargs)
+        
+        pass
+
+class HangmanScreenmanager(ScreenManager):
+    def __init__(self, **kwargs):
+        super(HangmanScreenmanager, self).__init__(**kwargs)
+
+
+class MySettings(FloatLayout):
+    def __init__(self, **kwargs):
+        super(MySettings, self).__init__(**kwargs)   
+
 class MyWidget(FloatLayout):
     """
     Documentation for HBoxWidget
@@ -51,34 +93,40 @@ class MyWidget(FloatLayout):
 
     def update_hangman(self, lines_to_draw):
 
-        self.ids.hangman_img.source = str(lines_to_draw) + '.png'
+        self.parent.ids.hangman_img.source = str(lines_to_draw) + '.png'
 
     def update_game_status(self, req, results):
 
-        word_status = results["word_status"]
 
+        word_status = results["word_status"]
+        wrong_letters = results["wrong_letters"]
+        num_wrong_letters = results["num_wrong_letters"]
         game_status = results["game_status"]
-        guessed_letters = results["guessed_letters"]
 
         # Update guessed status
-        word_status_label = self.ids.word_status
+        word_status_label = self.parent.ids.word_status
         word_status_label.text = word_status
         
         # Update guessed status
-        guessed_letters_label = self.ids.guessed_letters
-        guessed_letters_label.text = "Guessed:\n" + guessed_letters
+        wrong_letters_label = self.parent.ids.wrong_letters
+        wrong_letters_label.text = "Wrong:\n" + wrong_letters
 
         # Update game status
         game_status = results["game_status"]
-        game_over_label = self.ids.game_over
+        game_over_label = self.parent.ids.game_over
 
-        if game_status == 5:
+        # Won, lost, or still running?
+
+        if game_status == 1:
+            game_over_label.text = "WINNER"
+        elif game_status == 0:
             game_over_label.text = "GAME OVER"
+            word_status_label.text = "Word was:\n" + word_status
+                        
         else:
             game_over_label.text = ""
             
-
-        self.update_hangman(game_status)
+        self.update_hangman(num_wrong_letters)
 
         
     def get_game_status(self, dt):
@@ -87,17 +135,6 @@ class MyWidget(FloatLayout):
         req = UrlRequest('http://195.169.210.194:1234/1',
                          on_success=self.update_game_status,
                          req_headers=headers)
-
-    
-            
-class GameView(FloatLayout):
-    """Documentation for GameView
-    
-    """
-    def __init__(self, **kwargs):
-        super(GameView, self).__init__(**kwargs)
-
-    stop = threading.Event()
 
         
 class HangmanApp(App):
@@ -109,7 +146,8 @@ class HangmanApp(App):
         self.root.stop.set()
     
     def build(self):
-        return GameView()
+        # return GameView()
+        return HangmanScreenmanager()
      
 if __name__ == '__main__':
     HangmanApp().run()

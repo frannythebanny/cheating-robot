@@ -33,12 +33,12 @@ def nao_speech(possible_sentences):
     print(random.choice(possible_sentences))
 
 
-dictionary = pd.read_csv(os.path.join("dictionaries", "dict_en.txt"), sep = '\n').iloc[:, 0].values.tolist()
+dictionary = pd.read_csv(os.path.join("dictionaries", "nounlist.txt"), sep = '\n').iloc[:, 0].values.tolist()
 
-game = evilhangman.Cheaterhangman(dictionary, False)
-# game = evilhangman.Cheaterhangman(dictionary, True)
+# game = evilhangman.Cheaterhangman(dictionary, False)
+game = evilhangman.Cheaterhangman(dictionary, True)
 
-game.initialize(5)
+game.initialize(word_length=6)
 
 while True:
 
@@ -71,11 +71,6 @@ while True:
 
     print(game.guessed_wrong_letters)
     
-    # Send word status to GUI
-    send_status_to_GUI(game.status,
-                       game.guessed_wrong_letters,
-                       len(game.guessed_wrong_letters))
-
     # Determine game status
     if status == 0:
         print("Loser")
