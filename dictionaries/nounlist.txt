@@ -2050,7 +2050,6 @@ theory
 thermometer
 thing
 thistle
-thomas
 thought
 thread
 thrill
@@ -2140,7 +2139,6 @@ twilight
 twine
 twist
 typhoon
-tyvek
 uganda
 ukraine
 ukrainian

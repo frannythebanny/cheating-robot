@@ -17,7 +17,9 @@ game_fields = {
 settings_fields = {
 
     'participant_number': fields.Integer,
-    'participant_name': fields.String
+    'participant_name': fields.String,
+    'game_variant': fields.Integer,
+    'condition': fields.Integer
     
 }
 
@@ -32,6 +34,8 @@ parser.add_argument('game_status', type=int)
 settings_parser = reqparse.RequestParser()
 settings_parser.add_argument('participant_name')
 settings_parser.add_argument('participant_number', type=int)
+settings_parser.add_argument('game_variant', type=int)
+settings_parser.add_argument('condition', type=int)
 
 app = Flask(__name__)
 api = Api(app)
@@ -111,12 +115,15 @@ class SettingsResource(Resource):
 
         participant_name = parsed_args['participant_name']
         participant_number = parsed_args['participant_number']
+        game_variant = parsed_args['game_variant']
+        condition = parsed_args['condition']
 
-        print("Heyho new Datapoint", participant_name)
 
         settings = models.Settings(
             participant_name=participant_name,
-            participant_number=participant_number)
+            participant_number=participant_number,
+            game_variant=game_variant,
+            condition=condition)
 
         session.add(settings)
         session.commit()

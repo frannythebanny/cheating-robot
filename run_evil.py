@@ -35,8 +35,8 @@ def nao_speech(possible_sentences):
 
 dictionary = pd.read_csv(os.path.join("dictionaries", "nounlist.txt"), sep = '\n').iloc[:, 0].values.tolist()
 
-# game = evilhangman.Cheaterhangman(dictionary, False)
-game = evilhangman.Cheaterhangman(dictionary, True)
+game = evilhangman.Cheaterhangman(dictionary, False)
+# game = evilhangman.Cheaterhangman(dictionary, True)
 
 game.initialize(word_length=6)
 

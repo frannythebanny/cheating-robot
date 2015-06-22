@@ -23,7 +23,7 @@ class Cheaterhangman:
         Reduce the initial dictionary to words of just a certain length
         """
 
-        self.family = [x for x in self.family if len(x) == word_length]
+        self.family = [x.upper() for x in self.family if len(x) == word_length]
         self.status = '_' * word_length
 
         # Send word status to GUI

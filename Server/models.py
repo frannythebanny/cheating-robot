@@ -23,7 +23,10 @@ class Settings(Base):
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     participant_name = sqlalchemy.Column(sqlalchemy.String)
     participant_number = sqlalchemy.Column(sqlalchemy.Integer)
+    game_variant = sqlalchemy.Column(sqlalchemy.Integer)
+    condition = sqlalchemy.Column(sqlalchemy.Integer)
 
+    
 engine = sqlalchemy.create_engine(DB_URI)
 
 if __name__ == "__main__":

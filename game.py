@@ -125,6 +125,10 @@ def main():
            pport)       # parent broker port
 
 
+    # Check if social or not
+    settings = send_request.get_settings()
+    DO_SOCIAL_INTERACTION = bool(settings['condition'])
+        
     # Do the social interaction in the beginning
     if DO_SOCIAL_INTERACTION:
         socialInteraction_fran.greeting(NAO_AVAILABLE)
@@ -146,13 +150,23 @@ def main():
 
     # Read list of words for hangman  
     dictionary = pd.read_csv(os.path.join("dictionaries", "nounlist.txt"), sep = '\n').iloc[:, 0].values.tolist()
+
+    # Update game variant with info from server
+
+    settings = send_request.get_settings()
+    game_variant = int(settings['game_variant'])
+
+    print("game_variant is", game_variant)
     
     # Create an instance of a hangman game
     if game_variant == 0:
+        print("Using normal hangman")
         hangman_game = hangman.Hangman(dictionary)
     elif game_variant == 1:
+        print("Using evil hangman")
         hangman_game = evilhangman.Cheaterhangman(dictionary, True)
     elif game_variant == 2:
+        print("Using good hangman")
         hangman_game = evilhangman.Cheaterhangman(dictionary, False)
 
 

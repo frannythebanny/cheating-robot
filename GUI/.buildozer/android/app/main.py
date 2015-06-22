@@ -27,9 +27,6 @@ from kivy.core.window import Window
 import time
 import json
 import threading
-import urllib
-import urllib2
-
 
 class SettingsScreen(Screen):
 
@@ -37,11 +34,14 @@ class SettingsScreen(Screen):
         super(SettingsScreen, self).__init__(**kwargs)
 
     
-    def send_settings(self, participant_name, participant_number):
+    def send_settings(self, participant_name, game_variant, condition):
         
         params = {
             'participant_name': str(participant_name),
-            'participant_number': int(participant_number)}
+            'game_variant': game_variant,  # Evil, good, or normal hangman?
+            'condition': int(condition),  # Social or neutral robot?
+            'participant_number': 1
+        }
 
         data = json.dumps(params)
 
