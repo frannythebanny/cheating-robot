@@ -36,7 +36,6 @@ if NAO_AVAILABLE:
     from naoqi import ALModule
     import motion
     from optparse import OptionParser
-    import nao_moves
 
 
 # Naos sentences:
@@ -285,11 +284,11 @@ def main():
         if status == 0:
             socialInteraction_fran.nao_speech(text_loser, NAO_AVAILABLE)
             if NAO_AVAILABLE:
-                nao_moves.winner_move()
+                socialInteraction_fran.winner_move()
         if status == 1:
             socialInteraction_fran.nao_speech(text_winner, NAO_AVAILABLE)
             if NAO_AVAILABLE:
-                nao_moves.loser_move()
+                socialInteraction_fran.loser_move()
 
         i += 1
 
