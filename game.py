@@ -5,11 +5,9 @@ import os
 
 import random
 import evilhangman
-import os
 
 
 import socialInteraction_fran
-import nao_moves
 import send_request
 import time
 
@@ -26,16 +24,17 @@ NAO_PORT = 9559
 if NAO_AVAILABLE:
 
     from hangman_speechevent import SpeechEventModule
-    
-    global memory
-    memory = ALProxy('ALMemory', NAO_IP, NAO_PORT)
-    ledsProxy = ALProxy("ALLeds", NAO_IP, 9559)
-
     from naoqi import ALProxy
     from naoqi import ALBroker
     from naoqi import ALModule
     import motion
     from optparse import OptionParser
+    
+        
+    global memory
+    memory = ALProxy('ALMemory', NAO_IP, NAO_PORT)
+    ledsProxy = ALProxy("ALLeds", NAO_IP, 9559)
+
 
 
 # Naos sentences:
@@ -296,7 +295,7 @@ def main():
     socialInteraction_fran.nao_speech(["This is the end, my friend. Bye bye, H R I people"], NAO_AVAILABLE)
 
     if NAO_AVAILABLE:
-        nao_moves.wave()
+        socialInteraction_fran.wave()
 
 if __name__ == "__main__":
     main()

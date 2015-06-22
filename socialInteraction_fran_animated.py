@@ -31,8 +31,9 @@ if NAO_AVAILABLE:
     
     global tts
     global memory
-    tts = ALProxy("ALTextToSpeech", NAO_IP, NAO_PORT)
+    tts = ALProxy("ALAnimatedSpeech", NAO_IP, NAO_PORT)
     tts.enableNotifications()
+    # tts = ALProxy("ALTextToSpeech", NAO_IP, NAO_PORT)
     motionProxy = ALProxy("ALMotion", NAO_IP, NAO_PORT)
     postureProxy = ALProxy("ALRobotPosture", NAO_IP, NAO_PORT)
     ledsProxy = ALProxy("ALLeds", NAO_IP, NAO_PORT)

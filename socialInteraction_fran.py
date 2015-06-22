@@ -14,7 +14,7 @@ import time
 NAO_IP = "169.254.95.24"
 NAO_IP = "10.0.1.5"
 NAO_PORT = 9559
-name = 'Fran'
+name = 'Participant'
 
 # Good for debugging because then we can test it without having the nao
 
@@ -41,9 +41,6 @@ if NAO_AVAILABLE:
     postureProxy = ALProxy("ALRobotPosture", NAO_IP, NAO_PORT)
     ledsProxy = ALProxy("ALLeds", NAO_IP, NAO_PORT)
     memory = ALProxy('ALMemory', NAO_IP, NAO_PORT)
-    memory.subscribeToEvent("TouchChanged",
-            "ReactToTouch",
-            "onTouched")
 
     fb_dict = pd.Series.from_csv(os.path.join("dictionaries", "feedback.csv"), header=0)    
     fb_vocabulary = fb_dict.keys().tolist()
@@ -57,7 +54,7 @@ def nao_speech(possible_sentences, nao_available=True):
     text = random.choice(possible_sentences)
     
     if nao_available:
-        tts.say("\\vol=50\\\\vct=85\\\\bound=S\\\\rspd=70\\" + text)
+        tts.say("\\vol=50\\\\vct=85\\\\bound=S\\\\rspd=75\\" + text)
     elif LINUX_AVAILABLE:
         engine = pyttsx.init()
         engine.setProperty("rate", 135)
@@ -82,21 +79,18 @@ def greeting(nao_available=True):
     # Update name of player with info from server
 
     settings = send_request.get_settings()
-    name = settings['participant_name']
+    name = str(settings['participant_name'])
+    print("name is", name)
     
     # Start social interaction
-    nao_speech(["Finally someone who wants to play with me"], nao_available)
+    nao_speech(["Finally someone who wants to play with me \\pau=1000\\"], nao_available)
     
+
+    nao_speech(['Hi! My name is Naomi \\pau=300\\. '], nao_available)
+
     if nao_available:
-            
-        handshake()
         
-    else:
-        print('ACTION: nao moves her arm to do handshake')
-
-    nao_speech(['Hi!'], nao_available)
-
-    if nao_available:
+        handshake()
         
         for i in range(1,4):     
             move_arm_up()
@@ -106,13 +100,13 @@ def greeting(nao_available=True):
     else:
         print('ACTION: nao moves arm up and down four times')
         
-    nao_speech(['''My name is Naomi \\pau=300\\ and I\'m a robot. 
+    nao_speech(['''and I\'m a robot. 
                 The closet back there
                 '''], nao_available)
-    
-    #TODO: perhaps coordinate this with speech through animated speech            
+              
     if nao_available:
         pointing_closet()
+        postureProxy.goToPosture("StandInit", 0.7)
     else: 
         print('ACTION: nao points to closet')
     
@@ -121,11 +115,12 @@ def greeting(nao_available=True):
     karate and dance moves! At the moment, I\'m starting to get into yoga. 
     It\'s a lot more calm than the sports I normally do, but very nice 
     in the morning. But enough about me! \\pau=700\\ What\'s your name?'''], nao_available)
-                
+        
+    global SpeechEventListener
+    SpeechEventListener = SpeechEventModule("SpeechEventListener", fb_vocabulary)
+        
     #TODO: insert pause before last sentence
     if nao_available:
-        global SpeechEventListener
-        SpeechEventListener = SpeechEventModule("SpeechEventListener", fb_vocabulary)
     
         while True:
             guess_long = SpeechEventListener.memory.getData("WordRecognized")[0]
@@ -210,7 +205,8 @@ def greeting(nao_available=True):
             alphabet when guessing letters. Your guesses and the hangman are 
             displayed on this touch screen.'''], nao_available)  
             if nao_available:
-                pointing_to_phone()    
+                pointing_to_phone()
+                postureProxy.goToPosture("StandInit", 0.7)
             else: 
                 print('ACTION: nao points to phone')
             nao_speech(['Is that clear?'],nao_available)              
@@ -220,6 +216,7 @@ def greeting(nao_available=True):
         this touch screen.'''], nao_available)
         if nao_available:
             pointing_to_phone()    
+            postureProxy.goToPosture("StandInit", 0.7)
         else: 
             print('ACTION: nao points to phone')
         nao_speech(['''You then guess one letter from the alphabet 
@@ -403,7 +400,7 @@ def pointing_closet():
     
     try:
       # uncomment the following line and modify the IP if you use this script outside Choregraphe.
-      motion = ALProxy("ALMotion", IP, 9559)
+      #motion = ALProxy("ALMotion", IP, 9559)
       motion = ALProxy("ALMotion")
       motion.angleInterpolationBezier(names, times, keys);
     except BaseException, err:
