@@ -15,7 +15,7 @@ import time
 
 
 # Good for debugging because then we can test it without having the nao
-NAO_AVAILABLE = False
+NAO_AVAILABLE = True
 DO_SOCIAL_INTERACTION = True
 game_variant = 0
 

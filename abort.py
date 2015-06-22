@@ -4,7 +4,7 @@ from naoqi import ALModule
 
 # NAO's IP address
 NAO_IP = "169.254.95.24"
-NAO_IP = "10.0.1.5"
+NAO_IP = "10.0.1.3"
 
 
 asr = ALProxy("ALSpeechRecognition", NAO_IP, 9559)
