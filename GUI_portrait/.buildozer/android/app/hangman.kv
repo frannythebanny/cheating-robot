@@ -1,0 +1,29 @@
+<MyWidget>:
+    FloatLayout:
+        Image:
+            id: hangman_img
+            source: '0.png'
+            size_hint: None, None
+            size: root.height, root.width / 1.5
+            pos_hint: {'center_x': 0.5, 'center_y': 0.3}
+
+        Label:
+            id: word_status
+            font_size: 50
+            text: '_ _ _ _ _'
+            pos_hint: {'center_x': 0.5, 'center_y': 0.8}
+
+        Label:
+            id: wrong_letters
+            font_size: 50
+            text: 'A, B, C'
+            pos_hint: {'center_x': 0.5, 'center_y': 0.6}
+
+        Label:
+            id: game_over
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            font_size: 70
+            text: ''
+
+<GameView>:
+    MyWidget:

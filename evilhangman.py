@@ -5,14 +5,16 @@ import send_request
 
 class Cheaterhangman:
 
-    def __init__(self, dictionary, evil=True):
+    def __init__(self, dictionary, evil=True, max_guesses=7, word_length=6):
         self.dictionary = dictionary # Dictionary of hangman words
         self.evil = evil # Is the game evil or good
-        
+        self.max_guesses = max_guesses
         self.family = dictionary # Set the initial family to the entire dictionary 
         self.status = "" # Intitialize game status
         self.guessed_right_letters = set() # Correct letters the the player has guessed
         self.guessed_wrong_letters = []  # Incorrect letters
+        self.word_length = word_length
+        self.initialize(word_length)
 
 
     def initialize(self, word_length):
@@ -21,8 +23,13 @@ class Cheaterhangman:
         Reduce the initial dictionary to words of just a certain length
         """
 
-        self.family = [x for x in self.family if len(x) == word_length]
+        self.family = [x.upper() for x in self.family if len(x) == word_length]
         self.status = '_' * word_length
+
+        # Send word status to GUI
+        send_request.send_status_to_GUI(self.status,
+                                        self.guessed_wrong_letters,
+                                        self.get_status())
         
         return self.family
         
@@ -109,11 +116,13 @@ class Cheaterhangman:
             self.guessed_wrong_letters.append(guess)
             letter_was_in_word = 0
     
+
+        game_status = self.get_status()
             
         # Send word status to GUI
         send_request.send_status_to_GUI(self.status,
-                           self.guessed_wrong_letters,
-                           len(self.guessed_wrong_letters))
+                                        self.guessed_wrong_letters,
+                                        game_status)
 
         return letter_was_in_word
             
@@ -135,7 +144,8 @@ class Cheaterhangman:
 
     def get_status(self):
 
-        if len(self.guessed_wrong_letters) == 5:
+        if len(self.guessed_wrong_letters) == self.max_guesses:
+            self.status = random.choice(list(self.family))
             return 0
         elif len(self.guessed_right_letters) == len(list(set(self.status))):
             return 1

@@ -1,5 +1,48 @@
-<MyWidget>:
-    FloatLayout:
+<HangmanScreenmanager>:
+    SettingsScreen:
+    GameScreen:
+        
+
+<SettingsScreen>:
+    name: 'settings'
+    MySettings:
+        Label:
+            text: 'Participant Name'
+            pos_hint: {'center_x': 0.5, 'center_y': 0.8}
+        TextInput:
+            id: participant_name
+            font_size: 30
+            pos_hint: {'center_x': 0.5, 'center_y': 0.7}
+            size_hint: (0.4, 0.08)
+        Label:
+            text: 'Hangman variant (0: normal; 1: evil; 2: good):'
+            pos_hint: {'center_x': 0.5, 'center_y': 0.6}
+        TextInput:
+            id: hangman_variant
+            font_size: 30
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            input_filter: 'int'
+            size_hint: (0.3, 0.08)
+        Label:
+            text: 'Condition (0: neutral robot; 1: social robot)?'
+            pos_hint: {'center_x': 0.5, 'center_y': 0.4}
+        TextInput:
+            id: condition
+            font_size: 30
+            pos_hint: {'center_x': 0.5, 'center_y': 0.3}
+            input_filter: 'int'
+            size_hint: (0.3, 0.08)            
+        Button:
+            text: 'Start Hangman'
+            font_size: 30
+            on_release: root.send_settings(participant_name.text, hangman_variant.text, condition.text); app.root.current='game'
+            pos_hint: {'center_x': 0.5, 'center_y': 0.2}
+            size_hint: (0.4, 0.1)
+            background_color: (75 / 255, 74 / 255, 171 / 255, 255 / 255)
+
+<GameScreen>:        
+    name: 'game'
+    MyWidget:
         Image:
             id: hangman_img
             source: '0.png'
@@ -14,7 +57,7 @@
             pos_hint: {'center_x': 0.2, 'center_y': 0.8}
 
         Label:
-            id: guessed_letters
+            id: wrong_letters
             font_size: 50
             text: 'A, B, C'
             pos_hint: {'center_x': 0.2, 'center_y': 0.4}
@@ -26,5 +69,10 @@
             text: ''
             pos_hint: {'center_x': 0.5, 'center_y': 0.1}
 
-<GameView>:
-    MyWidget:
+        Button:
+            text: 'Settings'
+            font_size: 20
+            on_release: app.root.current = 'settings'
+            pos_hint: {'center_x': 0.85, 'center_y': 0.1}
+            background_color: (75 / 255, 74 / 255, 171 / 255, 255 / 255)
+            size_hint: (0.2, 0.1)

@@ -5,6 +5,7 @@ import os
 
 #import pyttsx
 
+import send_request
 
 import random
 import time
@@ -16,6 +17,7 @@ NAO_PORT = 9559
 name = 'Fran'
 
 # Good for debugging because then we can test it without having the nao
+
 NAO_AVAILABLE = True
 LINUX_AVAILABLE= False
 
@@ -51,14 +53,19 @@ def nao_speech(possible_sentences, nao_available=True):
     """
     Let Nao randomly select one of the possible sentences and speak them out loud
     """
+
+    text = random.choice(possible_sentences)
+    
     if nao_available:
-        tts.say("\\vol=50\\\\vct=85\\\\bound=S\\\\rspd=70\\" + random.choice(possible_sentences))
+        tts.say("\\vol=50\\\\vct=85\\\\bound=S\\\\rspd=70\\" + text)
     elif LINUX_AVAILABLE:
         engine = pyttsx.init()
-        engine.say(random.choice(possible_sentences))
+        engine.setProperty("rate", 135)
+        engine.say(text)
         engine.runAndWait()
+
     else:
-        print(random.choice(possible_sentences))
+        print(text)
 
         
 def StiffnessOn(proxy):
@@ -70,8 +77,14 @@ def StiffnessOn(proxy):
 
 
 def greeting(nao_available=True):
+
+
+    # Update name of player with info from server
+
+    settings = send_request.get_settings()
+    name = settings['participant_name']
     
-# Start social interaction
+    # Start social interaction
     nao_speech(["Finally someone who wants to play with me"], nao_available)
     
     if nao_available:
@@ -122,7 +135,7 @@ def greeting(nao_available=True):
             time.sleep(0.33)
     else:
         # Text input
-        guess_long = raw_input("DEBUG: Please enter your name:   ")
+        raw_input("DEBUG: Please enter your name:   ")
     
     nao_speech(['Ah! Welcome, ' + name + ''' ! It\'s nice to meet you!
             I\'m very glad you\'re here! You know, 
@@ -139,7 +152,7 @@ def greeting(nao_available=True):
     if nao_available:
         postureProxy.goToPosture("StandInit", 0.7)
         
-    nao_speech(['They are so much fun. \\pau=700\\ Do you want to hear a secret?'],nao_available)
+    nao_speech(['They are so much fun. \\pau=700\\ Do you want to hear a secret?'], nao_available)
     
     if nao_available:
         

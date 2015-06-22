@@ -3,12 +3,21 @@ import send_request
 
 class Hangman:
 
-    def __init__(self, dictionary):
+    def __init__(self, dictionary, max_guesses=7, word_length=6):
         self.dictionary = dictionary
         self.word = self.random_word()
+        self.max_guesses = max_guesses
+        
         self.guessed_right_letters = set()
         self.guessed_wrong_letters = []
-        self.status = ""
+        self.status = self.print_status()
+        self.word_length = word_length
+
+        # Send word status to GUI
+        send_request.send_status_to_GUI(self.status,
+                                        self.guessed_wrong_letters,
+                                        self.get_status())
+
 
     def random_word(self):
         """ Pick a random word from the dictionary"""
@@ -51,11 +60,13 @@ class Hangman:
                 self.guessed_wrong_letters.append(guess)
                 
         self.status = self.print_status()
+
+        word_status = self.get_status()
         
         # Send word status to GUI
         send_request.send_status_to_GUI(self.status,
                            self.guessed_wrong_letters,
-                           len(self.guessed_wrong_letters))
+                                        word_status)
 
 
         return letter_was_in_word
@@ -77,7 +88,8 @@ class Hangman:
 
     def get_status(self):
 
-        if len(self.guessed_wrong_letters) == 5:
+        if len(self.guessed_wrong_letters) == self.max_guesses:
+            self.status = self.word
             return 0
         elif len(self.guessed_right_letters) == len(list(set(self.word))):
             return 1
