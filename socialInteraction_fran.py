@@ -179,7 +179,7 @@ def greeting(nao_available=True):
         tell you something else. \\pau=700\\ I recently got a boyfriend.
         His name is Yob. He's just great! He is even learning how to cook, just for me! 
         I\'m so glad he\'s here, because now I\'m not alone anymore in that dark closet back there at 
-        night and on weekends when no humans visit. I really like humans. I really like you ''' + name +
+        night and on weekends when no humans visit.\\pau=1000\\ Oh! I really like you ''' + name +
         ''' Please stay a bit longer, I\'d love to play Hangman with you! 
         I recently learned how to play it. Do you know the game?'''],nao_available)
             

@@ -8,6 +8,7 @@ import evilhangman
 
 
 import socialInteraction_fran
+import neutralInteraction_fran
 import send_request
 import time
 
@@ -130,6 +131,10 @@ def main():
     # Do the social interaction in the beginning
     if DO_SOCIAL_INTERACTION:
         socialInteraction_fran.greeting(NAO_AVAILABLE)
+    elif NAO_AVAILABLE:
+        neutralInteraction_fran.greeting(NAO_AVAILABLE)
+    else: 
+        print('Nao sits down')
         
     # Start the game
     socialInteraction_fran.nao_speech(["Okay, let's start with the hang man game"], NAO_AVAILABLE)
