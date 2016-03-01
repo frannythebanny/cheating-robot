@@ -30,6 +30,9 @@ states:
 To run the code, first start the server (run `Server/run_flask.py`),
 then start the app (`GUI/main.py`), and finally the game (`game.py`).
 
+A demonstration of the framework in action can be seen at:
+[https://www.youtube.com/watch?v=_-2B_dtbeD8&feature=youtu.be]
+
 ## Important Files and Folders
 
 - `Server/run_flask.py`: Initializes the server (default IP: http://127.0.0.1:1235/). If you want to see the current game state, browse to: http://127.0.0.1:1235/1, the settings are found at: http://127.0.0.1:1235/settings. If you want to use the framework with a real NAO and a mobile phone, you have to use a public ip address for your server.
