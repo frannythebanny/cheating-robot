@@ -11,7 +11,7 @@ robot was programmed with Nao's Python SDK 1.14.52. The robot is
 capable of interacting autonomously with the users by using speech
 recognition and speech synthesis. Additionally, an application with a
 graphical user interface (GUI) that displays the Hangman game status
-for the participant included. It also allows the experimenter to
+for the participant is included. It also allows the experimenter to
 change the parameters of the interaction (social vs. neutral) and
 monitor the game.
 
@@ -32,7 +32,7 @@ then start the app (`GUI/main.py`), and finally the game (`game.py`).
 
 ## Important Files and Folders
 
-- `Server/run_flask.py`: Initializes the server (default IP: http://127.0.0.1:1235/). If you want to see the current game state, browse to: http://127.0.0.1:1235/1, the settings are found at: http://127.0.0.1:1235/settings
+- `Server/run_flask.py`: Initializes the server (default IP: http://127.0.0.1:1235/). If you want to see the current game state, browse to: http://127.0.0.1:1235/1, the settings are found at: http://127.0.0.1:1235/settings. If you want to use the framework with a real NAO and a mobile phone, you have to use a public ip address for your server.
 - `global_settings.py`: Global settings -- for example, specifies if a real NAO is available or the IP address of the server.
 - `game.py`: This is the main file that starts the social interaction and the game.
 - `abort.py`: Sometimes the NAO does not stop listening when the script crashes, running abort.py usually helps then.
