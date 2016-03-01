@@ -31,7 +31,8 @@ To run the code, first start the server (run `Server/run_flask.py`),
 then start the app (`GUI/main.py`), and finally the game (`game.py`).
 
 A demonstration of the framework in action can be seen at:
-[https://www.youtube.com/watch?v=_-2B_dtbeD8&feature=youtu.be]
+
+https://www.youtube.com/watch?v=_-2B_dtbeD8&feature=youtu.be
 
 ## Important Files and Folders
 
