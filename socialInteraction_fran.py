@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 
-#import pyttsx
+from global_settings import *
 
 import send_request
 
@@ -17,9 +17,6 @@ NAO_PORT = 9559
 name = 'Participant'
 
 # Good for debugging because then we can test it without having the nao
-
-NAO_AVAILABLE = True
-LINUX_AVAILABLE= False
 
 if NAO_AVAILABLE:
 
@@ -115,12 +112,11 @@ def greeting(nao_available=True):
     karate and dance moves! At the moment, I\'m starting to get into yoga. 
     It\'s a lot more calm than the sports I normally do, but very nice 
     in the morning. But enough about me! \\pau=700\\ What\'s your name?'''], nao_available)
-        
-    global SpeechEventListener
-    SpeechEventListener = SpeechEventModule("SpeechEventListener", fb_vocabulary)
-        
-    #TODO: insert pause before last sentence
+                
     if nao_available:
+
+        global SpeechEventListener
+        SpeechEventListener = SpeechEventModule("SpeechEventListener", fb_vocabulary)
     
         while True:
             guess_long = SpeechEventListener.memory.getData("WordRecognized")[0]

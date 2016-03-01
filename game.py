@@ -2,20 +2,19 @@ import hangman
 import pandas as pd
 import numpy as np
 import os
-
+from global_settings import *
 import random
 import evilhangman
 
-
 import socialInteraction_fran
 import neutralInteraction_fran
+
 import send_request
 import time
 
 
 # Good for debugging because then we can test it without having the nao
-NAO_AVAILABLE = True
-DO_SOCIAL_INTERACTION = True
+
 game_variant = 0
 
 # NAO's IP address
@@ -35,7 +34,6 @@ if NAO_AVAILABLE:
     global memory
     memory = ALProxy('ALMemory', NAO_IP, NAO_PORT)
     ledsProxy = ALProxy("ALLeds", NAO_IP, 9559)
-
 
 
 # Naos sentences:
@@ -96,6 +94,8 @@ def main():
     vocabulary = alphabet.keys().tolist()
     fb_vocabulary = fb_dict.keys().tolist()
 
+    print NAO_AVAILABLE
+
     if NAO_AVAILABLE:
         # NAO parser
         parser = OptionParser()
@@ -122,7 +122,6 @@ def main():
            0,           # find a free port and use it
            pip,         # parent broker IP
            pport)       # parent broker port
-
 
     # Check if social or not
     settings = send_request.get_settings()

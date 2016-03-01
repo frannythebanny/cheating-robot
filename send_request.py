@@ -1,5 +1,6 @@
 import requests
 import json
+from global_settings import *
 
 def send_status_to_GUI(word_status, wrong_letters, game_status):
 
@@ -18,7 +19,7 @@ def send_status_to_GUI(word_status, wrong_letters, game_status):
         'game_status': game_status
     }
 
-    requests.put("http://195.169.210.194:1234/1", data=payload)
+    requests.put(server_url + "1", data=payload)
 
 
 def send_settings(participant_name, game_variant, condition):
@@ -30,11 +31,11 @@ def send_settings(participant_name, game_variant, condition):
         'participant_number': 1
     }
 
-    requests.put("http://195.169.210.194:1234/settings", data=payload)    
+    requests.put(server_url + "settings", data=payload)    
 
 
 def get_settings():
 
-    r = requests.get("http://195.169.210.194:1234/settings")
+    r = requests.get(server_url + "settings")
     rj = r.json()
     return rj

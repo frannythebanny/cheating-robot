@@ -6,6 +6,7 @@ import random
 # import motion
 import almath
 
+from global_settings import *
 from naoqi import ALProxy
 from naoqi import ALBroker
 from naoqi import ALModule
@@ -21,11 +22,6 @@ NAO_IP = "10.0.1.5"
 NAO_PORT = 9559
 
 # Initialize proxies
-
-
-# Good for debugging because then we can test it without having the nao
-NAO_AVAILABLE = True
-
 if NAO_AVAILABLE:
     global tts
     global memory

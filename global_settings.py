@@ -1,0 +1,5 @@
+server_url = "http://127.0.0.1:1235/"
+
+NAO_AVAILABLE = False
+DO_SOCIAL_INTERACTION = False
+LINUX_AVAILABLE= False

@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 
-#import pyttsx
+from global_settings import *
 
 import send_request
 
@@ -17,9 +17,6 @@ NAO_PORT = 9559
 name = 'Participant'
 
 # Good for debugging because then we can test it without having the nao
-
-NAO_AVAILABLE = True
-LINUX_AVAILABLE= False
 
 if NAO_AVAILABLE:
 
