@@ -19,7 +19,7 @@ class SpeechEventModule(ALModule):
         self.asr = ALProxy("ALSpeechRecognition", NAO_IP, 9559)
             
         try:
-            self.asr.setLanguage("English")
+            self.asr.setLanguage("Dutch")
             self.asr.setVocabulary(vocabulary, False)
         except:
             pass

@@ -1,5 +1,5 @@
-server_url = "http://127.0.0.1:1235/"
+server_url = "http://192.168.0.103:1235/"
 
 NAO_AVAILABLE = False
-DO_SOCIAL_INTERACTION = False
+DO_SOCIAL_INTERACTION = True
 LINUX_AVAILABLE= False

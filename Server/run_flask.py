@@ -40,6 +40,9 @@ settings_parser.add_argument('condition', type=int)
 app = Flask(__name__)
 api = Api(app)
 
+host_ip ='192.168.0.103' #if not specified at bottom, localhost is used
+host_port = 1235 #if not using localhost and accessing from within, make sure to open port (e.g. Windows firewall)
+
 class GameResource(Resource):
 
     
@@ -152,4 +155,4 @@ api.add_resource(SettingsResource, '/settings')
 api.add_resource(SettingsListResource, '/allsettings')
     
 if __name__ == "__main__":
-    app.run(port=1235, debug=True)
+    app.run(host=host_ip, port=host_port, debug=True)

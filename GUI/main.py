@@ -28,13 +28,15 @@ import time
 import json
 import threading
 
+ip_address = '192.168.0.103'
+
 class SettingsScreen(Screen):
 
     def __init__(self, **kwargs):
         super(SettingsScreen, self).__init__(**kwargs)
 
     
-    def send_settings(self, participant_name, game_variant, condition):
+    def send_settings(self, ip_address, participant_name, game_variant, condition):
         
         params = {
             'participant_name': str(participant_name),
@@ -45,7 +47,7 @@ class SettingsScreen(Screen):
 
         data = json.dumps(params)
 
-        url = 'http://195.169.210.194:1234/settings'
+        url = 'http://' + ip_address + ':1235/settings'
         headers = {'Content-type': 'application/json'}
         
         req = UrlRequest(url,
@@ -97,7 +99,6 @@ class MyWidget(FloatLayout):
 
     def update_game_status(self, req, results):
 
-
         word_status = results["word_status"]
         wrong_letters = results["wrong_letters"]
         num_wrong_letters = results["num_wrong_letters"]
@@ -121,7 +122,7 @@ class MyWidget(FloatLayout):
             game_over_label.text = "WINNER"
         elif game_status == 0:
             game_over_label.text = "GAME OVER"
-            word_status_label.text = "Word was:\n" + word_status
+            word_status_label.text = "Woord was:\n" + word_status
                         
         else:
             game_over_label.text = ""
@@ -132,7 +133,7 @@ class MyWidget(FloatLayout):
     def get_game_status(self, dt):
 
         headers = {'Content-type': 'application/json'}
-        req = UrlRequest('http://195.169.210.194:1234/1',
+        req = UrlRequest('http://' + ip_address + ':1235/1',
                          on_success=self.update_game_status,
                          req_headers=headers)
 

@@ -39,53 +39,53 @@ if NAO_AVAILABLE:
 # Naos sentences:
 
 # Demand for guessing a letter
-text_guess_letter = ["Please guess a letter",
-                     "Next letter please",
-                     "Make a guess",
-                     "What's your next letter of choice?"]
+text_guess_letter = ["Raad eens een letter, alsteblieft",
+                     "De volgende letter, alsteblieft",
+                     "Raad maar",
+                     "Welke letter wil jij nu kiezen?"]
 
 # Answer if a guess was right
-text_guess_right = ["Your guess is right",
-                    "This is correct",
-                    "This is right"]
+text_guess_right = ["Goed gekozen",
+                    "Dit is juist",
+                    "Is goed!"]
 
 # Answer if a guess was wrong
-text_guess_wrong = ["Too bad, this letter is not in the word!",
-                    "Your guess is wrong.",
-                    "Unfortunately, this is not correct.",
-                    "Nice try but no, it's not in there."]
+text_guess_wrong = ["Helaas zit deze letter niet in het woord!",
+                    "Dit was geen goede keuze.",
+                    "Helaas fout.",
+                    "Goed geprobeerd maar nee, deze letter zit er niet in."]
 
 # Final sentence if the game was lost
-text_loser = ["Loser! Yeah I have won the game!",
-              "Oh no, you've lost the game. That means I am the winner!",
-              "Unfortunately, I have to tell you that you've lost the game. That means I am the winner!",
-              "Guess what?! You've lost the game! And I am the winner!"]
+text_loser = ["Sukkel! Ik heb gewonnen!",
+              "Oh nee, jij heeft verloren. Dat betekent dat ik de winnaar ben!",
+              "Helaas moet ik jij vertellen dat jij verloren hebt. Dat betekent dat ik gewonnen heb!",
+              "Jij hebt verloren! En ik ben de winnaar!"]
 
 # Final sentence if the game was won
-text_winner = ["Yeah, you've won! An I'm the loser",
-               "You are the winner! And I lost the game.",
-               "Congratulations! You have won the game! That means I'm the loser",
-               "You're a hang man professional! You have won! But I lost."]
+text_winner = ["Woehoe, jij heeft gewonnen! En ik ben de verliezer.",
+               "Jij bent de winnaar! En ik heb dit speel verloren.",
+               "Gefeliciteerd! Jij heeft het speel gewonnen! Dat betenkent dat ik de verliezer ben.",
+               "Jij bent een professionele galgje speler, toch? Jij heeft gewonnen! Ik helaas niet."]
 
 # Repeat the guess from the user
-text_repeat = ["Your guess is: ",
-               "You guessed: ",
-               "You've chosen letter: ",
-               "Your letter is: "]
+text_repeat = ["Jouw keuze is: ",
+               "Jij heeft deze letter geraden: ",
+               "Jij heeft voor deze letter gekozen: ",
+               "Jouw letter is: "]
                
 # Ask the user to repeat their letter
-ask_repeat = ["Sorry for the misunderstanding. Please repeat your letter.",
-               "Could you repeat your letter then?",
-               "It would be great if you could repeat your chosen letter again",
-               "Which one was your letter then?"]
+ask_repeat = ["Sorry dat ik het niet begreep. Herhaal jouw keuze alsteblieft?",
+               "Kan jij de letter herhalen?",
+               "Het zou fantastisch zijn als je de letter opnieuw zegd!",
+               "Sorry. Welke letter was het dan?"]
 
-text_guess_repeated_letter = ["You know that you've guessed this letter before, right?",
-                              "You have already guessed this letter before",
-                              "You should not guess the same letter twice"]
+text_guess_repeated_letter = ["Je weet dat je deze letter al geraden heeft, toch?",
+                              "Die heb je al geraden!",
+                              "Je dient dezelfde letter niet te herhalen!"]
 
 
-# NATO alphabet
-alphabet = pd.Series.from_csv(os.path.join("dictionaries", "nato.csv"), header=0)
+# Children alphabet
+alphabet = pd.Series.from_csv(os.path.join("dictionaries", "dutch_children_letters.csv"), header=0)
 fb_dict = pd.Series.from_csv(os.path.join("dictionaries", "feedback.csv"), header=0)
 
 def main():
@@ -136,8 +136,8 @@ def main():
         print('Nao sits down')
         
     # Start the game
-    socialInteraction_fran.nao_speech(["Okay, let's start with the hang man game"], NAO_AVAILABLE)
-    socialInteraction_fran.nao_speech(["Let me think about a word"], NAO_AVAILABLE)
+    socialInteraction_fran.nao_speech(["Okee, laten wij met het galgje spel beginnen!"], NAO_AVAILABLE)
+    socialInteraction_fran.nao_speech(["Laat me even een woord bedenken."], NAO_AVAILABLE)
 
 
     if NAO_AVAILABLE:
@@ -147,7 +147,7 @@ def main():
         ledsProxy.fadeRGB("FaceLeds", 44 * 1 * 255, 1)
         ledsProxy.fadeRGB("FaceLeds", 226 * 245 * 222, 1)
 
-    socialInteraction_fran.nao_speech(["Okay got one"], NAO_AVAILABLE)
+    socialInteraction_fran.nao_speech(["Okee ik weet een woord"], NAO_AVAILABLE)
     time.sleep(1)
 
     # Read list of words for hangman  
@@ -185,7 +185,7 @@ def main():
         if i == 0:
             # For example: "Please guess a letter"
             # First guess
-            socialInteraction_fran.nao_speech(["Please make your first guess"], NAO_AVAILABLE)
+            socialInteraction_fran.nao_speech(["Maak je eerste keuze"], NAO_AVAILABLE)
 
         elif user_canceled:
             socialInteraction_fran.nao_speech(ask_repeat, NAO_AVAILABLE)
@@ -212,7 +212,7 @@ def main():
 
         else:
             # Text input
-            guess_long = raw_input("DEBUG: Please make a guess (from NATO alphabet):   ")
+            guess_long = raw_input("DEBUG: Raad een letter (gebruik woorden van het spiekbriefje):   ")
 
         
         print("Guess_long is", guess_long)
@@ -221,7 +221,7 @@ def main():
         if guess_long in alphabet.index:
             guess = alphabet[guess_long]
         else:
-           socialInteraction_fran.nao_speech(["This letter is not part of the Nato alphabet"],
+           socialInteraction_fran.nao_speech(["Deze letter is niet deel van het verstrekt alfabet."],
                                          NAO_AVAILABLE)
            i += 1
            continue
@@ -254,7 +254,7 @@ def main():
 
                 # If user wanted to have another letter 
             print("feedback is", feedback)
-            if feedback == 'No':
+            if feedback == 'Nee':
                 user_canceled = True
                 i += 1
                 continue
@@ -296,7 +296,7 @@ def main():
         i += 1
 
     
-    socialInteraction_fran.nao_speech(["This is the end, my friend. Bye bye, H R I people"], NAO_AVAILABLE)
+    socialInteraction_fran.nao_speech(["Ik vond het ontzettend mooi met je te spelen! Wij moeten het echt eens herhalen!"], NAO_AVAILABLE)
 
     if NAO_AVAILABLE:
         socialInteraction_fran.wave()

@@ -40,9 +40,9 @@ class Hangman:
         # Did the player try to solve the word
         if len(guess) > 1:
             if guess == self.word:
-                print("You won.")
+                print("Jij heeft gewonnen.")
             else:
-                print("Your solution was wrong.")
+                print("Jouw poging was fout.")
 
         else:
 
