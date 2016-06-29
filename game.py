@@ -18,7 +18,7 @@ import time
 game_variant = 0
 
 # NAO's IP address
-NAO_IP = "10.0.1.5" if NAO_AVAILABLE else "localhost"
+NAO_IP = "192.168.0.104" if NAO_AVAILABLE else "localhost"
 NAO_PORT = 9559
 
 if NAO_AVAILABLE:

@@ -6,13 +6,15 @@ import os
 from global_settings import *
 
 import send_request
+import readExcel
 
 import random
 import time
+from random import randint
 
 # NAO's IP address
-NAO_IP = "169.254.95.24"
-NAO_IP = "10.0.1.5"
+NAO_IP = "192.168.0.104"
+#NAO_IP = "10.0.1.5"
 NAO_PORT = 9559
 name = 'Participant'
 
@@ -109,14 +111,14 @@ def greeting(nao_available=True):
     nao_speech(['''of misschien is het eerder \\pau=300'''], nao_available)
     
     if nao_available:
-        pointing_wall()
+        pointing_to_phone()
     else: 
         print('ACTION: nao points to wall')
         
     nao_speech(['''daar'''], nao_available)
     
     if nao_available:
-        shrug()
+        #shrug()
         postureProxy.goToPosture("StandInit", 0.7)
     else: 
         print('ACTION: nao shrugs')
@@ -140,17 +142,91 @@ def greeting(nao_available=True):
     else:
         # Text input
         raw_input("DEBUG: Can you imagine living in a hospital?")
+        
+    #Introduction to self-disclosure game
+    nao_speech(['''Ook als het niet zo gerieflijk is zijn er wel veel aardige kinderen die dagelijks langs komen, zoals jij!
+    Ik ben echt blij je nu echt te ontmoeten! Maar eigenlijk vind ik het niet echt fair, dat ik hier de eenige ben die dingen verteld!
+    Ik wil ook graag nog meer van jou weten. Spelen wij een spelletje waar ik jou een kort verhaaltje vertel en dan
+    ben jij aan de beurt met een verhaal uit jouw leven. Zo leren wij elkaar nog een beetje beter kennen. Ik ga beginnen.'''],nao_available)
     
-    nao_speech(['''Ook als het niet zo gerieflijk is zijn er wel veel aardige kinderen die dagelijks langs komen, zoals jij! 
-            Ik ben echt blij je nu echt te ontmoeten en dat je met mij wilt spelen! Alleen... 
-            ik ben niet de beste galgje speler.'''],nao_available)
+    #self-disclosure game with four rounds
+    # Demand for guessing a letter
+    like_story = ["Wow! Dat was echt een spannend verhaaltje! Nu ben ik weer aan de beurt.",
+                  "Ik vind het erg leuk jij zo beter te leren kennen. Nu ben ik weer aan de beurt.",
+                  "Interessant! Dat is iets wat ik nog niet over jou wist! Nu ben ik weer aan de beurt."]
+                  
+    disclosure_list = [readExcel.discDF_lvl0, readExcel.discDF_lvl1, readExcel.discDF_lvl2, readExcel.discDF_lvl3]
+        
+    if not disclosure_list:
+        disclosure_list.append(readExcel.discDF_lvl0)
+        disclosure_list.append(readExcel.discDF_lvl1)
+        disclosure_list.append(readExcel.discDF_lvl2)
+        disclosure_list.append(readExcel.discDF_lvl3)
+
+    i=0
+    while i<4:
+        say_name_of_child = randint(0,1)
+        intimacy_lvl = randint(0,len(disclosure_list)-1)
+        print('This is the intimacy level:' + str(intimacy_lvl))
+        intimacy_list = disclosure_list[intimacy_lvl]
+        del disclosure_list[intimacy_lvl]
+        result = readExcel.get_random_disclosure(intimacy_list,'P'+ str(settings['participant_number']))
+        disclosure = result[0]
+        prompt_id = result[1]
+        disclosure = readExcel.parse_content(disclosure, False, name)
+        nao_speech([disclosure],nao_available)
+        
+        prompt = readExcel.get_associated_prompt(prompt_id)
+        if(say_name_of_child == 1):
+            prompt = readExcel.parse_content(prompt, True, name)
+        else: prompt = readExcel.parse_content(prompt, False, name)
+        nao_speech([prompt], nao_available)
+        
+        #here goes the wait until stop signal speech input listener
+        print('LISTENING: until end of speech signal')
+        
+        if i<=1:        
+            nao_speech(like_story, nao_available)
+        else: 
+            nao_speech(['Laatst rondje, okee? Daarna gaan we galgje spelen! Ik begin weer.'], nao_available)
             
+        i = i + 1
+        
+    #readExcel.write_used_disclosures('usedids2.xlsx',readExcel.used_disclosures)
+    
+    nao_speech([''''Vieeuw! Het is leuk maar ook bestwel uitputtend zo veel verhalen te bedenken en te vertellen. 
+                Hoe zou je het vinden als wij nu enkele partijtjes galgje gaan spelen? Heb jij daar zin in? '''],nao_available)
+                
+    if nao_available:
+        
+        SpeechEventListener.listen()
+        # Wait for first input
+        while True:
+            guess_long = SpeechEventListener.memory.getData("WordRecognized")[0]
+            if guess_long != '':
+                break
+            time.sleep(0.33)  
+    
+        if guess_long in fb_dict.index:
+            guess = fb_dict[guess_long]
+            
+    else:
+        # Text input
+        guess = raw_input("DEBUG: Ja/Nee?:   ")
+     
+    if guess == 'Ja':
+        nao_speech(['Ik ben heel blij dat je met mij wilt spelen! Alleen... ik ben niet de beste galgje speler.'], nao_available)
+           
     if nao_available:
         sad()
     else: 
         print('ACTION: nao bows her head to look sad')
     
-    nao_speech(['''Ik verlies echt te vaak.'''], nao_available)
+    if guess == 'Ja':
+        nao_speech(['Ik verlies echt vaak.'], nao_available)
+    else:
+        nao_speech(['''Laten wij het tenminste proberen. Ik hou echt van galgje spelen, en als je het niet leuk vindt kunnen
+        wij altijd ermee stoppen. Ik ben ook geen goede speler, ik verlies echt vaak.'''], nao_available)
     
     if nao_available:
         postureProxy.goToPosture("StandInit", 0.7)
