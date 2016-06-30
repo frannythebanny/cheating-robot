@@ -13,7 +13,7 @@ import time
 from random import randint
 
 # NAO's IP address
-NAO_IP = "192.168.0.104"
+NAO_IP = "192.168.0.101"
 #NAO_IP = "10.0.1.5"
 NAO_PORT = 9559
 name = 'Participant'

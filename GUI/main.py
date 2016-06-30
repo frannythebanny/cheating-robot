@@ -28,7 +28,7 @@ import time
 import json
 import threading
 
-ip_address ='192.168.0.100'
+ip_address ='192.168.0.102'
 #ip_address = '145.94.155.239'
 
 class SettingsScreen(Screen):

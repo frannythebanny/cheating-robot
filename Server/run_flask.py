@@ -40,7 +40,7 @@ settings_parser.add_argument('condition', type=int)
 app = Flask(__name__)
 api = Api(app)
 
-host_ip ='192.168.0.100'
+host_ip ='192.168.0.102'
 #host_ip ='145.94.155.239' #if not specified at bottom, localhost is used
 host_port = 1235 #if not using localhost and accessing from within, make sure to open port (e.g. Windows firewall)
 
