@@ -3,9 +3,8 @@ import send_request
 
 class Hangman:
 
-    def __init__(self, dictionary, max_guesses=7, word_length=6):
-        self.dictionary = dictionary
-        self.word = self.random_word()
+    def __init__(self, woord, max_guesses=7, word_length=6):
+        self.word = woord
         self.max_guesses = max_guesses
         
         self.guessed_right_letters = set()
