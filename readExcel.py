@@ -50,7 +50,7 @@ def get_random_disclosure(df_disc, participantID):
     #add the ID to list of used IDs    
     used_disclosures[participantID].append(disclosure['ID'])
     #return triple of used dic, text to speak, and associated prompt
-    return [disclosure['SD_NL'], disclosure['Prompt']]
+    return [disclosure['SD_NL'], disclosure['Prompt'], disclosure['Woord']]
     
 def get_associated_prompt(prompt_id):
     prompt_id = int(prompt_id.replace('P',''));
@@ -110,6 +110,7 @@ def write_used_disclosures(filename, dic):
 
     book.save(filename)
     
+
 
 
 
