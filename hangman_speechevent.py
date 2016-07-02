@@ -6,10 +6,10 @@ from optparse import OptionParser
 
 # NAO's IP address
 NAO_IP = "169.254.95.24"
-NAO_IP = "10.0.1.5"
+NAO_IP = "192.168.0.104" 
 
 class SpeechEventModule(ALModule):
-    def __init__(self, name, vocabulary):
+    def __init__(self, name, vocabulary, wordspotting=False):
         ALModule.__init__(self, name)
 
         global memory
@@ -17,12 +17,16 @@ class SpeechEventModule(ALModule):
         self.memory = ALProxy('ALMemory', NAO_IP, 9559)
         self.module_name = name
         self.asr = ALProxy("ALSpeechRecognition", NAO_IP, 9559)
+        #self.asr.setLanguage("Dutch")
+        self.asr.setVocabulary(vocabulary,wordspotting)
             
-        try:
-            self.asr.setLanguage("Dutch")
-            self.asr.setVocabulary(vocabulary, False)
-        except:
-            pass
+#==============================================================================
+#         try:
+#             
+#         except:
+#             print("something went wrong with setting the vocabulary.")
+#             pass
+#==============================================================================
         
         self.listen()
         
@@ -47,4 +51,7 @@ class SpeechEventModule(ALModule):
         print "Key: ", key
         print "Value: " , value
         print "Message: " , message
-        self.memory.unsubscribeToEvent("WordRecognized", self.module_name)
+        if (value[0] == 'Bitterballen') & (value[1] < 0.4):
+            print("I'm not confident enough that I really heard Bitterballen")
+        else:
+            self.memory.unsubscribeToEvent("WordRecognized", self.module_name)

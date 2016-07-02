@@ -7,13 +7,14 @@ from global_settings import *
 
 import send_request
 import readExcel
+import abort
 
 import random
 import time
 from random import randint
 
 # NAO's IP address
-NAO_IP = "192.168.0.101"
+NAO_IP = "192.168.0.104"
 #NAO_IP = "10.0.1.5"
 NAO_PORT = 9559
 name = 'Participant'
@@ -44,6 +45,9 @@ if NAO_AVAILABLE:
     fb_dict = pd.Series.from_csv(os.path.join("dictionaries", "feedback.csv"), header=0)    
     fb_vocabulary = fb_dict.keys().tolist()
     
+    eos_dict = pd.Series.from_csv(os.path.join("dictionaries", "endofspeech.csv"), header=0)    
+    eos_vocabulary = eos_dict.keys().tolist()
+    
 
 def nao_speech(possible_sentences, nao_available=True):
     """
@@ -53,7 +57,8 @@ def nao_speech(possible_sentences, nao_available=True):
     text = random.choice(possible_sentences)
     
     if nao_available:
-        tts.say("\\vol=50\\\\vct=85\\\\bound=S\\\\rspd=75\\" + text)
+        #tts.say("\\vol=75\\\\vct=85\\\\bound=S\\\\rspd=75\\" + text)
+        tts.say("\\bound=S\\\\rspd=85\\" + text)
     elif LINUX_AVAILABLE:
         engine = pyttsx.init()
         engine.setProperty("rate", 135)
@@ -74,7 +79,6 @@ def StiffnessOn(proxy):
 
 def greeting(nao_available=True):
 
-
     # Update name of player with info from server
 
     settings = send_request.get_settings()
@@ -85,7 +89,7 @@ def greeting(nao_available=True):
     nao_speech(["Eindelijk iemand die met mij wil spelen \\pau=1000\\"], nao_available)
     
 
-    nao_speech(['Hoi! Ik ben Robin \\pau=300\\. '], nao_available)
+    nao_speech(['Hoi! Ik ben Robin. \\pau=300\\ '], nao_available)
 
     if nao_available:
         
@@ -108,10 +112,10 @@ def greeting(nao_available=True):
     else: 
         print('ACTION: nao points to closet')
         
-    nao_speech(['''of misschien is het eerder \\pau=300'''], nao_available)
+    nao_speech(['''of misschien is het eerder \\pau=300\\'''], nao_available)
     
     if nao_available:
-        pointing_to_phone()
+        left_arm_point()
     else: 
         print('ACTION: nao points to wall')
         
@@ -123,9 +127,30 @@ def greeting(nao_available=True):
     else: 
         print('ACTION: nao shrugs')
         
-    nao_speech(['hmm ik weet het niet zeker. Robots kunnen ook niet alles weten.'], nao_available)
+    nao_speech(['hum ik weet het niet zeker. Robots kunnen ook niet alles weten.'], nao_available)
     
-    nao_speech([ '''Ik vind jouw woning echt leuk! Veel gerieflijker dan het ziekenhuis.\\pau=300\\ 
+    if nao_available:
+        head_right()
+    else: 
+        print('ACTION: nao looks right')
+        
+    time.sleep(0.5)
+    
+    if nao_available:
+        head_left()
+    else: 
+        print('ACTION: nao looks left')
+        
+    time.sleep(0.3)
+    
+    if nao_available:
+        #shrug()
+        postureProxy.goToPosture("StandInit", 0.7)
+    else: 
+        print('ACTION: nao returns to normal')
+    
+    
+    nao_speech([ '''\\pau=1000\\ Ik vind jullie woning echt leuk! Veel gerieflijker dan het ziekenhuis.\\pau=300\\ 
     Kan je je voorstellen in een ziekenhuis te wonen?  \\pau=700\\'''], nao_available)
                 
     if nao_available:
@@ -139,13 +164,15 @@ def greeting(nao_available=True):
                 break
                 # Check three times per second
             time.sleep(0.33)
+            
+        SpeechEventListener.unsubscribeFromMemory()
     else:
         # Text input
         raw_input("DEBUG: Can you imagine living in a hospital?")
         
     #Introduction to self-disclosure game
     nao_speech(['''Ook als het niet zo gerieflijk is zijn er wel veel aardige kinderen die dagelijks langs komen, zoals jij!
-    Ik ben echt blij je nu echt te ontmoeten! Maar eigenlijk vind ik het niet echt fair, dat ik hier de eenige ben die dingen verteld!
+    Ik ben totaal blij je nu te ontmoeten! Maar eigenlijk vind ik het niet eerlijk, dat ik hier de eenige ben die dingen verteld!
     Ik wil ook graag nog meer van jou weten. Spelen wij een spelletje waar ik jou een kort verhaaltje vertel en dan
     ben jij aan de beurt met een verhaal uit jouw leven. Zo leren wij elkaar nog een beetje beter kennen. Ik ga beginnen.'''],nao_available)
     
@@ -153,7 +180,7 @@ def greeting(nao_available=True):
     # Demand for guessing a letter
     like_story = ["Wow! Dat was echt een spannend verhaaltje! Nu ben ik weer aan de beurt.",
                   "Ik vind het erg leuk jij zo beter te leren kennen. Nu ben ik weer aan de beurt.",
-                  "Interessant! Dat is iets wat ik nog niet over jou wist! Nu ben ik weer aan de beurt."]
+                  "Interessant! Dat is iets wat ik nog niet wist! Nu ben ik weer aan de beurt."]
                   
     disclosure_list = [readExcel.discDF_lvl0, readExcel.discDF_lvl1, readExcel.discDF_lvl2, readExcel.discDF_lvl3]
         
@@ -167,39 +194,58 @@ def greeting(nao_available=True):
     while i<4:
         say_name_of_child = randint(0,1)
         intimacy_lvl = randint(0,len(disclosure_list)-1)
-        print('This is the intimacy level:' + str(intimacy_lvl))
         intimacy_list = disclosure_list[intimacy_lvl]
+        print('This is the intimacy list:' + str(intimacy_lvl))
         del disclosure_list[intimacy_lvl]
         result = readExcel.get_random_disclosure(intimacy_list,'P'+ str(settings['participant_number']))
         disclosure = result[0]
         prompt_id = result[1]
         disclosure = readExcel.parse_content(disclosure, False, name)
-        nao_speech([disclosure],nao_available)
+        nao_speech(["Laat me even een verhaaltje bedenken. \\pau=2000\\ Okee, ik weet iets. \\pau=500\\"], nao_available)
+        nao_speech([disclosure.encode('utf-8')],nao_available)
         
         prompt = readExcel.get_associated_prompt(prompt_id)
         if(say_name_of_child == 1):
             prompt = readExcel.parse_content(prompt, True, name)
         else: prompt = readExcel.parse_content(prompt, False, name)
-        nao_speech([prompt], nao_available)
+        nao_speech([prompt.encode('utf-8')], nao_available)
         
-        #here goes the wait until stop signal speech input listener
-        print('LISTENING: until end of speech signal')
+        if nao_available:
+            # Start to listen to story
+            # memory.unsubscribeToEvent("WordRecognized", "SpeechEventListener")                
+            global SpeechEventListener3
+            SpeechEventListener3 = SpeechEventModule("SpeechEventListener", eos_vocabulary, False)
+        
+            try:
+                while True:
+                    guess_long = memory.getData("WordRecognized")[0]
+                    confidence = memory.getData("WordRecognized")[1]
+                    print(confidence)
+                    if (guess_long == "Bitterballen") & (confidence > 0.4):
+                        break
+                    time.sleep(0.33)
+            except KeyboardInterrupt:
+                print
+                print "Interrupted by user, shutting down"
+
+            SpeechEventListener3.unsubscribeFromMemory()
         
         if i<=1:        
             nao_speech(like_story, nao_available)
-        else: 
-            nao_speech(['Laatst rondje, okee? Daarna gaan we galgje spelen! Ik begin weer.'], nao_available)
+        elif i==2: 
+            nao_speech(['Laatst \\pau=100\\ rondje, okee? Daarna gaan we galgje spelen! Ik begin weer.'], nao_available)
             
         i = i + 1
         
-    #readExcel.write_used_disclosures('usedids2.xlsx',readExcel.used_disclosures)
+    readExcel.write_used_disclosures(os.path.join("usedids","used_ids.xlsx"), readExcel.used_disclosures)
+    #readExcel.write_used_disclosures("usedids2.xlsx", readExcel.used_disclosures)
     
-    nao_speech([''''Vieeuw! Het is leuk maar ook bestwel uitputtend zo veel verhalen te bedenken en te vertellen. 
-                Hoe zou je het vinden als wij nu enkele partijtjes galgje gaan spelen? Heb jij daar zin in? '''],nao_available)
+    nao_speech(['''Vieeuw! Het is leuk maar ook bestwel uitputtend zo veel verhalen te bedenken en te vertellen. 
+                Hoe zou je het vinden als wij nu enkele partijtjes galgje gaan spelen? Heb jij daar zin in? '''], nao_available)
                 
     if nao_available:
         
-        SpeechEventListener.listen()
+        SpeechEventListener = SpeechEventModule("SpeechEventListener", fb_vocabulary)
         # Wait for first input
         while True:
             guess_long = SpeechEventListener.memory.getData("WordRecognized")[0]
@@ -215,7 +261,7 @@ def greeting(nao_available=True):
         guess = raw_input("DEBUG: Ja/Nee?:   ")
      
     if guess == 'Ja':
-        nao_speech(['Ik ben heel blij dat je met mij wilt spelen! Alleen... ik ben niet de beste galgje speler.'], nao_available)
+        nao_speech(['Ik ben heel blij dat je met mij wilt spelen! Alleen \\pau=1000\\ ik ben niet de beste galgje speler.'], nao_available)
            
     if nao_available:
         sad()
@@ -225,7 +271,7 @@ def greeting(nao_available=True):
     if guess == 'Ja':
         nao_speech(['Ik verlies echt vaak.'], nao_available)
     else:
-        nao_speech(['''Laten wij het tenminste proberen. Ik hou echt van galgje spelen, en als je het niet leuk vindt kunnen
+        nao_speech(['''Laten wij het tenminste proberen. Ik hou erg van galgje spelen, en als je het niet leuk vindt kunnen
         wij altijd ermee stoppen. Ik ben ook geen goede speler, ik verlies echt vaak.'''], nao_available)
     
     if nao_available:
@@ -255,12 +301,12 @@ def greeting(nao_available=True):
         nao_speech(['''Okee, maar je moet een beetje dichter bij komen.\\vol=65\\
         Toen ik met onderzoekers werk val ik soms achterover om ze een beetje te verschrikken. 
         \\pau=500\\ Haha! \\pau=300\\ Je zou eens hun gezichten moeten zien toen het gebeurt. 
-        Echt hilarisch.\\pau=1000\\ Oh! Ik vind je heel aardig ''' + name +
-        ''' Wij zullen veel lol hebben tijdens het spelletje. Ken je galgje al?'''],nao_available)
+        Echt hilarisch.\\pau=1000\\ \\vol=100\\ Oh! Ik vind je heel lief, ''' + name +
+        '''. Wij zullen veel lol hebben tijdens het spelletje. Ken je galgje al?'''],nao_available)
             
     else:
         nao_speech(['''Okee, dan hou ik het geheim en vertel je in plaats daarvan een mop. \\pau=700\\ 
-        Wat staat er op het graf van een robot? \\pau=3000\\ Roest in vrede! Ha ha! \\pau = 500\\ Oh! 
+        Wat staat er op het graf van een robot? \\pau=3000\\ Roest in vrede! \\pau=500\\ Haha! \\pau = 500\\ Oh! 
         Ik vind je heel aardig ''' + name +
         ''' Wij zullen veel lol hebben tijdens het spelletje. Ken je galgje al?'''],nao_available)
             
@@ -281,8 +327,8 @@ def greeting(nao_available=True):
         guess = raw_input("DEBUG: Ja/Nee?:   ")        
         
     if guess == 'Ja':
-            nao_speech(['''Fantastisch! Het eenige verschil tussen deze en een gewoonlijke 
-            galgje spel is dat je alleen letters mag raden en geen hele woorden. Als je een letter wilt 
+            nao_speech(['''Fantastisch! Het eenige verschil 
+            deze keer, is dat je alleen letters mag raden en geen hele woorden. Als je een letter wilt 
             zeggen, gebruik dan de woorden op het spiekbriefje. Jouw pogingen en het
             galgje mannetje zullen op het tablet aangetoond worden.'''], nao_available)
             if nao_available:
@@ -290,7 +336,7 @@ def greeting(nao_available=True):
                 postureProxy.goToPosture("StandInit", 0.7)
             else: 
                 print('ACTION: nao points to phone')
-            nao_speech(['Is that clear?'],nao_available)              
+            nao_speech(['Heb je alles begrepen?'],nao_available)              
     else:
         nao_speech(['''Het is helemaal niet moeilijk.
         Ik bedenk een woord en dan teken ik een streep voor iedere letter in het woord op
@@ -358,6 +404,8 @@ def greeting(nao_available=True):
         
             if guess_long in fb_dict.index:
                 guess = fb_dict[guess_long]
+                
+            abort.abort_speechinput()
     else:
         guess = raw_input('DEBUG: Ja/Nee?:   ')
         
@@ -609,6 +657,361 @@ def sad():
 
       
     time.sleep(1)  
+    
+def left_arm_point():
+    from naoqi import ALProxy
+    names = list()
+    times = list()
+    keys = list()
+    
+    names.append("HeadPitch")
+    times.append([ 0.04000])
+    keys.append([ [ 0.05518, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("HeadYaw")
+    times.append([ 0.04000])
+    keys.append([ [ 0.02143, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LAnklePitch")
+    times.append([ 0.04000])
+    keys.append([ [ -0.34979, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LAnkleRoll")
+    times.append([ 0.04000])
+    keys.append([ [ 0.00004, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LElbowRoll")
+    times.append([ 0.04000])
+    keys.append([ [ -0.99246, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LElbowYaw")
+    times.append([ 0.04000])
+    keys.append([ [ -1.37451, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHand")
+    times.append([ 0.04000])
+    keys.append([ [ 0.00450, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipPitch")
+    times.append([ 0.04000])
+    keys.append([ [ -0.45095, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipRoll")
+    times.append([ 0.04000])
+    keys.append([ [ 0.00004, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipYawPitch")
+    times.append([ 0.04000])
+    keys.append([ [ 0.00004, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LKneePitch")
+    times.append([ 0.04000])
+    keys.append([ [ 0.69793, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LShoulderPitch")
+    times.append([ 0.04000])
+    keys.append([ [ 1.44192, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LShoulderRoll")
+    times.append([ 0.04000])
+    keys.append([ [ 0.26227, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LWristYaw")
+    times.append([ 0.04000])
+    keys.append([ [ -0.03226, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RAnklePitch")
+    times.append([ 0.04000])
+    keys.append([ [ -0.34971, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RAnkleRoll")
+    times.append([ 0.04000])
+    keys.append([ [ 0.00004, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RElbowRoll")
+    times.append([ 0.04000])
+    keys.append([ [ 0.20253, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RElbowYaw")
+    times.append([ 0.04000])
+    keys.append([ [ 1.46953, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHand")
+    times.append([ 0.04000])
+    keys.append([ [ 0.00636, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipPitch")
+    times.append([ 0.04000])
+    keys.append([ [ -0.45104, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipRoll")
+    times.append([ 0.04000])
+    keys.append([ [ 0.00004, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipYawPitch")
+    times.append([ 0.04000])
+    keys.append([ [ 0.00004, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RKneePitch")
+    times.append([ 0.04000])
+    keys.append([ [ 0.70415, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RShoulderPitch")
+    times.append([ 0.04000])
+    keys.append([ [ 0.18719, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RShoulderRoll")
+    times.append([ 0.04000])
+    keys.append([ [ -0.57683, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RWristYaw")
+    times.append([ 0.04000])
+    keys.append([ [ 0.02757, [ 3, -0.01333, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    try:
+      # uncomment the following line and modify the IP if you use this script outside Choregraphe.
+      # motion = ALProxy("ALMotion", IP, 9559)
+      motion = ALProxy("ALMotion")
+      motion.angleInterpolationBezier(names, times, keys);
+    except BaseException, err:
+      print err
+
+def head_right():
+    from naoqi import ALProxy
+    names = list()
+    times = list()
+    keys = list()
+    
+    names.append("HeadPitch")
+    times.append([ 0.20000])
+    keys.append([ [ 0.03371, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("HeadYaw")
+    times.append([ 0.20000])
+    keys.append([ [ 0.91422, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LAnklePitch")
+    times.append([ 0.20000])
+    keys.append([ [ -0.35133, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LAnkleRoll")
+    times.append([ 0.20000])
+    keys.append([ [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LElbowRoll")
+    times.append([ 0.20000])
+    keys.append([ [ -0.99246, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LElbowYaw")
+    times.append([ 0.20000])
+    keys.append([ [ -1.37451, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHand")
+    times.append([ 0.20000])
+    keys.append([ [ 0.00441, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipPitch")
+    times.append([ 0.20000])
+    keys.append([ [ -0.45095, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipRoll")
+    times.append([ 0.20000])
+    keys.append([ [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipYawPitch")
+    times.append([ 0.20000])
+    keys.append([ [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LKneePitch")
+    times.append([ 0.20000])
+    keys.append([ [ 0.69946, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LShoulderPitch")
+    times.append([ 0.20000])
+    keys.append([ [ 1.43425, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LShoulderRoll")
+    times.append([ 0.20000])
+    keys.append([ [ 0.26227, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LWristYaw")
+    times.append([ 0.20000])
+    keys.append([ [ -0.03072, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RAnklePitch")
+    times.append([ 0.20000])
+    keys.append([ [ -0.35124, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RAnkleRoll")
+    times.append([ 0.20000])
+    keys.append([ [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RElbowRoll")
+    times.append([ 0.20000])
+    keys.append([ [ 0.98794, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RElbowYaw")
+    times.append([ 0.20000])
+    keys.append([ [ 1.37289, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHand")
+    times.append([ 0.20000])
+    keys.append([ [ 0.00441, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipPitch")
+    times.append([ 0.20000])
+    keys.append([ [ -0.44950, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipRoll")
+    times.append([ 0.20000])
+    keys.append([ [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipYawPitch")
+    times.append([ 0.20000])
+    keys.append([ [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RKneePitch")
+    times.append([ 0.20000])
+    keys.append([ [ 0.70108, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RShoulderPitch")
+    times.append([ 0.20000])
+    keys.append([ [ 1.44507, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RShoulderRoll")
+    times.append([ 0.20000])
+    keys.append([ [ -0.27156, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RWristYaw")
+    times.append([ 0.20000])
+    keys.append([ [ 0.03677, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    try:
+      # uncomment the following line and modify the IP if you use this script outside Choregraphe.
+      # motion = ALProxy("ALMotion", IP, 9559)
+      motion = ALProxy("ALMotion")
+      motion.angleInterpolationBezier(names, times, keys);
+    except BaseException, err:
+      print err
+      
+def head_left():
+    # Choregraphe bezier export in Python.
+    from naoqi import ALProxy
+    names = list()
+    times = list()
+    keys = list()
+    
+    names.append("HeadPitch")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.03371, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ -0.00925, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("HeadYaw")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.91422, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ -0.94805, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LAnklePitch")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ -0.35133, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ -0.34826, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LAnkleRoll")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LElbowRoll")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ -0.99246, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ -0.99246, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LElbowYaw")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ -1.37451, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ -1.37451, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHand")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.00441, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 0.00445, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipPitch")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ -0.45095, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ -0.45095, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipRoll")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LHipYawPitch")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LKneePitch")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.69946, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 0.70100, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LShoulderPitch")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 1.43425, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 1.44038, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LShoulderRoll")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.26227, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 0.26227, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("LWristYaw")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ -0.03072, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ -0.03226, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RAnklePitch")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ -0.35124, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ -0.35124, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RAnkleRoll")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RElbowRoll")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.98794, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 0.98794, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RElbowYaw")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 1.37289, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 1.37289, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHand")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.00441, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 0.00445, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipPitch")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ -0.44950, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ -0.44950, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipRoll")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RHipYawPitch")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 0.00004, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RKneePitch")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.70108, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 0.70568, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RShoulderPitch")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 1.44507, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 1.45581, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RShoulderRoll")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ -0.27156, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ -0.27003, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    names.append("RWristYaw")
+    times.append([ 0.20000, 0.40000])
+    keys.append([ [ 0.03677, [ 3, -0.06667, 0.00000], [ 3, 0.06667, 0.00000]], [ 0.03677, [ 3, -0.06667, 0.00000], [ 3, 0.00000, 0.00000]]])
+    
+    try:
+      # uncomment the following line and modify the IP if you use this script outside Choregraphe.
+      # motion = ALProxy("ALMotion", IP, 9559)
+      motion = ALProxy("ALMotion")
+      motion.angleInterpolationBezier(names, times, keys);
+    except BaseException, err:
+      print err
 
 def handshake():
     # Choregraphe bezier export in Python.

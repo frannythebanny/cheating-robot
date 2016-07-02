@@ -21,7 +21,7 @@ import time
 NAO_AVAILABLE = True
 
 # NAO's IP address
-NAO_IP = "10.0.1.5" if NAO_AVAILABLE else "localhost"
+NAO_IP = "192.168.0.104"  if NAO_AVAILABLE else "localhost"
 NAO_PORT = 9559
 
 ledsProxy = ALProxy("ALLeds", NAO_IP, 9559)         

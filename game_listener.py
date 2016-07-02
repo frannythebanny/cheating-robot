@@ -12,8 +12,8 @@ import time
 
 
 # NAO's IP address
-NAO_IP = "169.254.95.24"
-NAO_IP = "10.0.1.5"
+#NAO_IP = "169.254.95.24"
+NAO_IP = "192.168.0.104" 
 
 # Global variable to store the HumanGreeter module instance
 SpeechEventListener = None

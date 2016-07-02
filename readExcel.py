@@ -4,6 +4,7 @@ Created on Tue Jun 28 14:27:34 2016
 
 @author: Franziska
 """
+import random
 from random import randint
 import pandas
 import xlrd
@@ -39,18 +40,23 @@ discDF_lvl3 = disclosure_df[disclosure_df['Level']==3]
 
 #picking a random item from dataframe
 def get_random_disclosure(df_disc, participantID):
-    disclosure = df_disc.iloc[1]
+    #some start value
+    key = df_disc.iloc[1]['ID']
+    disclosure = df_disc[df_disc["ID"] == key]
     list_used = used_disclosures[participantID]
+    print(type(key))
+    print(type(list_used))
     #check whether it is in the list of already used items
-    while disclosure['ID'] in list_used:
+    while key in list_used:
         #get random index
-        key = randint(1,len(df_disc))
+        key = random.choice(df_disc["ID"].tolist())
         #get row at this index
-        disclosure = df_disc.iloc[key]
-    #add the ID to list of used IDs    
-    used_disclosures[participantID].append(disclosure['ID'])
+        disclosure = df_disc[df_disc["ID"] == key]
+        print(type(key))
+    #add the ID of chosen disclosure to list of used IDs    
+    used_disclosures[participantID].append(key)
     #return triple of used dic, text to speak, and associated prompt
-    return [disclosure['SD_NL'], disclosure['Prompt'], disclosure['Woord']]
+    return [disclosure['SD_NL'].iloc[0], disclosure['Prompt'].iloc[0], disclosure['Woord'].iloc[0]]
     
 def get_associated_prompt(prompt_id):
     prompt_id = int(prompt_id.replace('P',''));
@@ -99,7 +105,7 @@ def parse_content(content, say_name, name):
 
 def write_used_disclosures(filename, dic):
     book = xlwt.Workbook()
-    sh = book.get_sheet(0)
+    sh = book.add_sheet("Sheet1")
     i=0
     for key in dic.keys():
         values = dic[key]
@@ -107,7 +113,6 @@ def write_used_disclosures(filename, dic):
         for j in range(len(values)):
             sh.write(j+1, i, values[j])
         i+=1
-
     book.save(filename)
     
 

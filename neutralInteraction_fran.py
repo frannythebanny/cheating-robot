@@ -11,8 +11,7 @@ import random
 import time
 
 # NAO's IP address
-NAO_IP = "169.254.95.24"
-NAO_IP = "10.0.1.5"
+NAO_IP = "192.168.0.104" 
 NAO_PORT = 9559
 name = 'Participant'
 

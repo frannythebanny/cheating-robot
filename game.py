@@ -4,7 +4,10 @@ import numpy as np
 import os
 from global_settings import *
 import random
+from random import randint
 import evilhangman
+import abort
+
 
 import socialInteraction_fran
 #import neutralInteraction_fran
@@ -21,7 +24,7 @@ import time
 game_variant = 0
 
 # NAO's IP address
-NAO_IP = "192.168.0.101" if NAO_AVAILABLE else "localhost"
+NAO_IP = "192.168.0.104" if NAO_AVAILABLE else "localhost"
 NAO_PORT = 9559
 
 if NAO_AVAILABLE:
@@ -33,7 +36,6 @@ if NAO_AVAILABLE:
     import motion
     from optparse import OptionParser
     
-        
     global memory
     memory = ALProxy('ALMemory', NAO_IP, NAO_PORT)
     ledsProxy = ALProxy("ALLeds", NAO_IP, NAO_PORT)
@@ -135,7 +137,8 @@ def main():
     if DO_SOCIAL_INTERACTION:
         socialInteraction_fran.greeting(NAO_AVAILABLE)
     elif NAO_AVAILABLE:
-        neutralInteraction_fran.greeting(NAO_AVAILABLE)
+        #neutralInteraction_fran.greeting(NAO_AVAILABLE)
+        print("skipping neutral interaction")
     else: 
         print('Nao sits down')
         
@@ -177,6 +180,9 @@ def main():
         disclosure = result[0]
         disclosure = readExcel.parse_content(disclosure, False, name)
         prompt = readExcel.parse_content(prompt, True, name)
+        
+        eos_dict = pd.Series.from_csv(os.path.join("dictionaries", "endofspeech.csv"), header=0)    
+        eos_vocabulary = eos_dict.keys().tolist()
         
         # Create an instance of a hangman game
         if game_variant == 0:
@@ -222,7 +228,7 @@ def main():
                         break
                     # Check three times per second
                     time.sleep(0.33)
-    
+                
                 SpeechEventListener.unsubscribeFromMemory()
     
             else:
@@ -236,16 +242,11 @@ def main():
             if guess_long in alphabet.index:
                 guess = alphabet[guess_long]
             else:
-               socialInteraction_fran.nao_speech(["Deze letter is niet deel van het verstrekt alfabet."],
+               socialInteraction_fran.nao_speech(["Deze letter is niet deel van het verstrekt alfabet. Probeer het opnieuw."],
                                              NAO_AVAILABLE)
                i += 1
                continue
         
-    
-            # Break the entire interaction on saying stop
-            # TODO: another safe word would be better
-            if guess == 'Stop':
-                break
     
             # Repeat letter
             repeat_letter = [sentence + guess + '?' for sentence in text_repeat]
@@ -275,6 +276,11 @@ def main():
                     continue
                 
                 SpeechEventListener2.unsubscribeFromMemory()
+                # Break the entire interaction on saying stop
+                # TODO: another safe word would be better
+                if feedback == 'Stop':
+                    break
+                
     
             # Determine if letter was in word
     
@@ -312,24 +318,46 @@ def main():
             
         #At the end of a round
             
-        socialInteraction_fran.nao_speech(["Hummm, het woord was " + woord + "."], NAO_AVAILABLE)
+        socialInteraction_fran.nao_speech(["Hum, het woord was " + woord.encode('utf-8') + "."], NAO_AVAILABLE)
             
-        socialInteraction_fran.nao_speech([disclosure], NAO_AVAILABLE)
+        socialInteraction_fran.nao_speech([disclosure.encode('utf-8')], NAO_AVAILABLE)
+        
+        prompt_text = readExcel.get_associated_prompt(prompt)
             
-        socialInteraction_fran.nao_speech([prompt], NAO_AVAILABLE)
+        socialInteraction_fran.nao_speech([readExcel.parse_content(prompt_text, True, name).encode('utf-8')], NAO_AVAILABLE)
             
-        print("Listen until end of speech signal)
+        if NAO_AVAILABLE:
+            # Start to listen to story
+            # memory.unsubscribeToEvent("WordRecognized", "SpeechEventListener")                
+            global SpeechEventListener3
+            SpeechEventListener3 = SpeechEventModule("SpeechEventListener", eos_vocabulary, False)
+        
+            try:
+                while True:
+                    guess_long = memory.getData("WordRecognized")[0]
+                    confidence = memory.getData("WordRecognized")[1]
+                    print(confidence)
+                    if (guess_long == "Bitterballen") & (confidence > 0.4):
+                        break
+                    time.sleep(0.33)
+            except KeyboardInterrupt:
+                print
+                print "Interrupted by user, shutting down"
+
+            SpeechEventListener3.unsubscribeFromMemory()
+            
         print("will now restart the whole game loop. If child agrees.")
             
         socialInteraction_fran.nao_speech(["Wil jij nog een partijtje spelen?"], NAO_AVAILABLE)
         
         if NAO_AVAILABLE:
-        
-            global SpeechEventListener3
-            SpeechEventListener3 = SpeechEventModule("SpeechEventListener", fb_vocabulary)
+            
+            global SpeechEventListener4
+            SpeechEventListener4 = SpeechEventModule("SpeechEventListener", fb_vocabulary)
+            
             # Wait for first input
             while True:
-                guess_long = SpeechEventListener3.memory.getData("WordRecognized")[0]
+                guess_long = SpeechEventListener4.memory.getData("WordRecognized")[0]
                 if guess_long != '':
                     break
                 time.sleep(0.33)  
@@ -337,19 +365,22 @@ def main():
             if guess_long in fb_dict.index:
                 guess = fb_dict[guess_long]
                 
+            SpeechEventListener4.unsubscribeFromMemory()
+                
         else:
             # Text input
             guess = raw_input("DEBUG: Ja/Nee?:   ")
          
         if guess == 'Ja':
-            socialInteraction_fran.nao_speech(['Tof!'], nao_available)
+            socialInteraction_fran.nao_speech(['Tof!'], NAO_AVAILABLE)
             rounds += 1
         elif guess == 'Nee':
-            socialInteraction_fran.nao_speech(['Jammer, maar ok, dan gaan we iets anders doen!'], nao_available)
+            socialInteraction_fran.nao_speech(['Jammer, maar ok, dan gaan we iets anders doen!'], NAO_AVAILABLE)
             rounds = 4    
     
     socialInteraction_fran.nao_speech(["Ik vond het ontzettend mooi met je te spelen! Wij moeten het echt eens herhalen!"], NAO_AVAILABLE)
-
+    abort.abort_speechinput
+    
     if NAO_AVAILABLE:
         socialInteraction_fran.wave()
 

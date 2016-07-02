@@ -4,7 +4,7 @@ import send_request
 class Hangman:
 
     def __init__(self, woord, max_guesses=7, word_length=6):
-        self.word = woord
+        self.word = woord.upper()
         self.max_guesses = max_guesses
         
         self.guessed_right_letters = set()
@@ -36,27 +36,18 @@ class Hangman:
         # 'Normalize' word
         guess = guess.upper()
 
-        # Did the player try to solve the word
-        if len(guess) > 1:
-            if guess == self.word:
-                print("Jij heeft gewonnen.")
-            else:
-                print("Jouw poging was fout.")
+        # Determine if letter has been guessed before.
+        if guess in self.guessed_right_letters or guess in self.guessed_wrong_letters:
+            letter_was_in_word = 2
+            self.guessed_wrong_letters.append(guess)
+
+
+        elif guess in self.word:
+            self.guessed_right_letters.add(guess)
+            letter_was_in_word = 1
 
         else:
-
-            # Determine if letter has been guessed before.
-            if guess in self.guessed_right_letters or guess in self.guessed_wrong_letters:
-                letter_was_in_word = 2
-                self.guessed_wrong_letters.append(guess)
-
-
-            elif guess in self.word:
-                self.guessed_right_letters.add(guess)
-                letter_was_in_word = 1
-
-            else:
-                self.guessed_wrong_letters.append(guess)
+            self.guessed_wrong_letters.append(guess)
                 
         self.status = self.print_status()
 
