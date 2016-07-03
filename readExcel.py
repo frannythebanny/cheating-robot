@@ -60,7 +60,7 @@ def get_random_disclosure(df_disc, participantID):
     
 def get_associated_prompt(prompt_id):
     prompt_id = int(prompt_id.replace('P',''));
-    prompt = prompt_df.iloc[prompt_id]
+    prompt = prompt_df.iloc[prompt_id-1]
     return prompt['Prompt_NL']
     
 def parse_content(content, say_name, name):
@@ -71,8 +71,8 @@ def parse_content(content, say_name, name):
     nameNurse = "Julia" #name of nurse that robot has a crush on. Ideally, one that works at hospital and that the child knows.
     nameR1 = "Elmo" #another male care robot in the hospital
     nameR2 = "Pippa" #new female care robot in the hospital
-    nameR3 = "Chris" #bully, also robot in the hospital
-    nameDoctor = "K."
+    nameR3 = "Kris" #bully, also robot in the hospital
+    nameDoctor = "na"
     genderDoctor = "Female"
     
     content = content.replace("{name-friend}",nameFriend)

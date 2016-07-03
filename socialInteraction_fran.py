@@ -119,7 +119,7 @@ def greeting(nao_available=True):
     else: 
         print('ACTION: nao points to wall')
         
-    nao_speech(['''daar'''], nao_available)
+    nao_speech(['''daar.'''], nao_available)
     
     if nao_available:
         #shrug()
@@ -127,7 +127,7 @@ def greeting(nao_available=True):
     else: 
         print('ACTION: nao shrugs')
         
-    nao_speech(['hum ik weet het niet zeker. Robots kunnen ook niet alles weten.'], nao_available)
+    nao_speech(['Hum, ik weet het niet zeker. Robots kunnen ook niet alles weten.'], nao_available)
     
     if nao_available:
         head_right()
@@ -150,7 +150,7 @@ def greeting(nao_available=True):
         print('ACTION: nao returns to normal')
     
     
-    nao_speech([ '''\\pau=1000\\ Ik vind jullie woning echt leuk! Veel gerieflijker dan het ziekenhuis.\\pau=300\\ 
+    nao_speech([ '''\\pau=1000\\ Ik vind jullie woning echt leuk! Veel leuker dan het ziekenhuis.\\pau=300\\ 
     Kan je je voorstellen in een ziekenhuis te wonen?  \\pau=700\\'''], nao_available)
                 
     if nao_available:
@@ -171,16 +171,16 @@ def greeting(nao_available=True):
         raw_input("DEBUG: Can you imagine living in a hospital?")
         
     #Introduction to self-disclosure game
-    nao_speech(['''Ook als het niet zo gerieflijk is zijn er wel veel aardige kinderen die dagelijks langs komen, zoals jij!
-    Ik ben totaal blij je nu te ontmoeten! Maar eigenlijk vind ik het niet eerlijk, dat ik hier de eenige ben die dingen verteld!
-    Ik wil ook graag nog meer van jou weten. Spelen wij een spelletje waar ik jou een kort verhaaltje vertel en dan
+    nao_speech(['''Ook als het niet zo leuk is zijn er wel veel aardige kinderen die dagelijks langs komen, zoals jij!
+    Ik ben heel blij je nu te ontmoeten! Maar eigenlijk vind ik het niet eerlijk, dat ik hier de enige ben die dingen vertelt!
+    Ik wil ook graag nog meer van jou weten. Laten wij een spelletje spelen waar ik jou een kort verhaaltje vertel en dan
     ben jij aan de beurt met een verhaal uit jouw leven. Zo leren wij elkaar nog een beetje beter kennen. Ik ga beginnen.'''],nao_available)
     
     #self-disclosure game with four rounds
     # Demand for guessing a letter
     like_story = ["Wow! Dat was echt een spannend verhaaltje! Nu ben ik weer aan de beurt.",
                   "Ik vind het erg leuk jij zo beter te leren kennen. Nu ben ik weer aan de beurt.",
-                  "Interessant! Dat is iets wat ik nog niet wist! Nu ben ik weer aan de beurt."]
+                  "Interessant! Dat wist ik nog niet! Nu ben ik weer aan de beurt."]
                   
     disclosure_list = [readExcel.discDF_lvl0, readExcel.discDF_lvl1, readExcel.discDF_lvl2, readExcel.discDF_lvl3]
         
@@ -233,14 +233,14 @@ def greeting(nao_available=True):
         if i<=1:        
             nao_speech(like_story, nao_available)
         elif i==2: 
-            nao_speech(['Laatst \\pau=100\\ rondje, okee? Daarna gaan we galgje spelen! Ik begin weer.'], nao_available)
+            nao_speech(['Laatst \\pau=100\\ rondje, okee? Daarna spelen we galgje! Ik begin weer.'], nao_available)
             
         i = i + 1
         
     readExcel.write_used_disclosures(os.path.join("usedids","used_ids.xlsx"), readExcel.used_disclosures)
     #readExcel.write_used_disclosures("usedids2.xlsx", readExcel.used_disclosures)
     
-    nao_speech(['''Vieeuw! Het is leuk maar ook bestwel uitputtend zo veel verhalen te bedenken en te vertellen. 
+    nao_speech(['''Vieuw!\\pau=200\\ Het is leuk maar ook bestwel uitputtend zo veel verhalen te bedenken en te vertellen. 
                 Hoe zou je het vinden als wij nu enkele partijtjes galgje gaan spelen? Heb jij daar zin in? '''], nao_available)
                 
     if nao_available:
@@ -272,12 +272,12 @@ def greeting(nao_available=True):
         nao_speech(['Ik verlies echt vaak.'], nao_available)
     else:
         nao_speech(['''Laten wij het tenminste proberen. Ik hou erg van galgje spelen, en als je het niet leuk vindt kunnen
-        wij altijd ermee stoppen. Ik ben ook geen goede speler, ik verlies echt vaak.'''], nao_available)
+        wij er altijd mee stoppen. Ik ben ook geen goede speler, ik verlies echt vaak.'''], nao_available)
     
     if nao_available:
         postureProxy.goToPosture("StandInit", 0.7)
         
-    nao_speech(['''Maar eigenlijk geeft het niet of men verliest of wint! Ik vind het zo leuk om met kinderen te spelen. 
+    nao_speech(['''Maar eigenlijk geeft het niet of je verliest of wint! Ik vind het zo leuk om met kinderen te spelen. 
     Mensen zijn grappig. \\pau=700\\ Mag ik je een geheim vertellen?'''], nao_available)
     
     if nao_available:
@@ -299,16 +299,16 @@ def greeting(nao_available=True):
     
     if guess == 'Ja':
         nao_speech(['''Okee, maar je moet een beetje dichter bij komen.\\vol=65\\
-        Toen ik met onderzoekers werk val ik soms achterover om ze een beetje te verschrikken. 
-        \\pau=500\\ Haha! \\pau=300\\ Je zou eens hun gezichten moeten zien toen het gebeurt. 
-        Echt hilarisch.\\pau=1000\\ \\vol=100\\ Oh! Ik vind je heel lief, ''' + name +
-        '''. Wij zullen veel lol hebben tijdens het spelletje. Ken je galgje al?'''],nao_available)
+        Als ik met onderzoekers werk val ik soms express achterover om ze een beetje te laten schrikken. 
+        \\pau=500\\ Haha! \\pau=300\\ Je zou hun gezichten eens moeten zien als het gebeurt. 
+        Echt hilarisch.\\pau=1000\\ \\vol=100\\ Oh!''' + name +
+        ''', wij zullen veel lol hebben tijdens het spelletje. Ken je galgje al?'''],nao_available)
             
     else:
         nao_speech(['''Okee, dan hou ik het geheim en vertel je in plaats daarvan een mop. \\pau=700\\ 
         Wat staat er op het graf van een robot? \\pau=3000\\ Roest in vrede! \\pau=500\\ Haha! \\pau = 500\\ Oh! 
-        Ik vind je heel aardig ''' + name +
-        ''' Wij zullen veel lol hebben tijdens het spelletje. Ken je galgje al?'''],nao_available)
+        Oh! ''' + name +
+        ''' wij zullen veel lol hebben tijdens het spelletje. Ken je galgje al?'''],nao_available)
             
     if nao_available:
         
@@ -327,10 +327,10 @@ def greeting(nao_available=True):
         guess = raw_input("DEBUG: Ja/Nee?:   ")        
         
     if guess == 'Ja':
-            nao_speech(['''Fantastisch! Het eenige verschil 
+            nao_speech(['''Fantastisch! Het enige verschil 
             deze keer, is dat je alleen letters mag raden en geen hele woorden. Als je een letter wilt 
             zeggen, gebruik dan de woorden op het spiekbriefje. Jouw pogingen en het
-            galgje mannetje zullen op het tablet aangetoond worden.'''], nao_available)
+            galgje mannetje zullen op de tablet getoond worden.'''], nao_available)
             if nao_available:
                 pointing_to_phone()
                 postureProxy.goToPosture("StandInit", 0.7)
@@ -348,7 +348,7 @@ def greeting(nao_available=True):
             print('ACTION: nao points to phone')
         nao_speech(['''Daarna mag jij een letter van het alfabet raden. Als het 
         niet in mijn gekozen woord zit, teken ik een deel van het galgje mannetje
-        aan de rechterkant van het beeldscherm. Als ik alle tien delen van het 
+        aan de rechterkant van het beeldscherm. Als ik alle zeven delen van het 
         mannetje getekend heb en jij nog steeds het woord niet weet, heb jij verloren.
         Als jouw gekozen letter in het woord zit, zal ik het op iedere stip 
         schrijven waar het voorkomt. Je mag alleen letters raden en niet hele woorden.
@@ -372,17 +372,17 @@ def greeting(nao_available=True):
         guess = raw_input("DEBUG: Ja/Nee?:   ")
         
     if guess == 'Ja':
-        nao_speech(['''Tof, dan gaan we aan de slag! Ik zal de spel master zijn en 
-        jij moet raden. Als je verliest, krijg ik een punt. Als je een woord helemaal heeft geraden
+        nao_speech(['''Tof, dan gaan we aan de slag! Ik zal een woord verzinnen en 
+        jij mag raden. Als je verliest, krijg ik een punt. Als je een woord helemaal hebt geraden
         krijg jij een punt. Maar voordat we kunnen beginnen, ga ik nog even zitten. Het kan wel
-        een beetje duren, zo 'n galgje partijtje.'''],nao_available)
+        even duren, zo 'n galgje partijtje.'''],nao_available)
         if nao_available:
             postureProxy.goToPosture("Sit", 0.7)
         else: 
             print('Nao sits down')
                 
     else:
-        nao_speech(['''Als je nog vragen heeft, stel ze aan Franziska. Ik neem ondertussen een korte pauze.'''], nao_available)
+        nao_speech(['''Als je nog vragen hebt, stel ze aan Franziska. Ik neem ondertussen een korte pauze.'''], nao_available)
         if nao_available:
             postureProxy.goToPosture("Sit", 0.7)
         else: 
@@ -410,7 +410,7 @@ def greeting(nao_available=True):
         guess = raw_input('DEBUG: Ja/Nee?:   ')
         
     if guess == 'No':
-        nao_speech(['''Als je nog vragen heeft, stel ze aan Franziska. Ik neem ondertussen een korte pauze.'''], nao_available)
+        nao_speech(['''Als je nog vragen hebt, stel ze aan Franziska. Ik neem ondertussen een korte pauze.'''], nao_available)
         raw_input("Press Enter to continue   ")
 
 if __name__ == "__main__":

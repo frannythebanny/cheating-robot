@@ -8,7 +8,7 @@ class Hangman:
         self.max_guesses = max_guesses
         
         self.guessed_right_letters = set()
-        self.guessed_wrong_letters = []
+        self.guessed_wrong_letters = set()
         self.status = self.print_status()
         self.word_length = word_length
 
@@ -39,7 +39,7 @@ class Hangman:
         # Determine if letter has been guessed before.
         if guess in self.guessed_right_letters or guess in self.guessed_wrong_letters:
             letter_was_in_word = 2
-            self.guessed_wrong_letters.append(guess)
+            self.guessed_wrong_letters.add(guess)
 
 
         elif guess in self.word:
@@ -47,7 +47,7 @@ class Hangman:
             letter_was_in_word = 1
 
         else:
-            self.guessed_wrong_letters.append(guess)
+            self.guessed_wrong_letters.add(guess)
                 
         self.status = self.print_status()
 

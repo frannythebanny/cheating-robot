@@ -47,7 +47,7 @@ if NAO_AVAILABLE:
 text_guess_letter = ["Raad eens een letter, alsteblieft",
                      "De volgende letter, alsteblieft",
                      "Raad maar",
-                     "Welke letter wil jij nu kiezen?"]
+                     "Voor welke letter wil jij nu kiezen?"]
 
 # Answer if a guess was right
 text_guess_right = ["Goed gekozen",
@@ -61,26 +61,26 @@ text_guess_wrong = ["Helaas zit deze letter niet in het woord!",
                     "Goed geprobeerd maar nee, deze letter zit er niet in."]
 
 # Final sentence if the game was lost
-text_loser = ["Sukkel! Ik heb gewonnen!",
-              "Oh nee, jij heeft verloren. Dat betekent dat ik de winnaar ben!",
-              "Helaas moet ik jij vertellen dat jij verloren hebt. Dat betekent dat ik gewonnen heb!",
+text_loser = ["Woehoe! Ik heb gewonnen!",
+              "Oh nee, jij hebt verloren. Dat betekent dat ik de winnaar ben!",
+              "Helaas moet ik je vertellen dat je verloren hebt. Dat betekent dat ik gewonnen heb!",
               "Jij hebt verloren! En ik ben de winnaar!"]
 
 # Final sentence if the game was won
-text_winner = ["Woehoe, jij heeft gewonnen! En ik ben de verliezer.",
+text_winner = ["Woehoe, jij hebt gewonnen! En ik ben de verliezer.",
                "Jij bent de winnaar! En ik heb dit speel verloren.",
-               "Gefeliciteerd! Jij heeft het speel gewonnen! Dat betenkent dat ik de verliezer ben.",
-               "Jij bent een professionele galgje speler, toch? Jij heeft gewonnen! Ik helaas niet."]
+               "Gefeliciteerd! Jij hebt het speel gewonnen! Dat betekent dat ik de verliezer ben.",
+               "Jij bent een professionele galgje speler, toch? Jij hebt gewonnen! Ik helaas niet."]
 
 # Repeat the guess from the user
 text_repeat = ["Jouw keuze is: ",
-               "Jij heeft deze letter geraden: ",
-               "Jij heeft voor deze letter gekozen: ",
+               "Jij hebt deze letter geraden: ",
+               "Jij hebt voor deze letter gekozen: ",
                "Jouw letter is: "]
                
 # Ask the user to repeat their letter
 ask_repeat = ["Sorry dat ik het niet begreep. Herhaal jouw keuze alsteblieft?",
-               "Kan jij de letter herhalen?",
+               "Kun jij de letter herhalen?",
                "Het zou fantastisch zijn als je de letter opnieuw zegd!",
                "Sorry. Welke letter was het dan?"]
 
@@ -206,7 +206,7 @@ def main():
             if i == 0:
                 # For example: "Please guess a letter"
                 # First guess
-                socialInteraction_fran.nao_speech(["Maak je eerste keuze"], NAO_AVAILABLE)
+                socialInteraction_fran.nao_speech(["Maak je eerste keuze en gebruik het spiekbriefje ervoor."], NAO_AVAILABLE)
     
             elif user_canceled:
                 socialInteraction_fran.nao_speech(ask_repeat, NAO_AVAILABLE)
@@ -242,7 +242,7 @@ def main():
             if guess_long in alphabet.index:
                 guess = alphabet[guess_long]
             else:
-               socialInteraction_fran.nao_speech(["Deze letter is niet deel van het verstrekt alfabet. Probeer het opnieuw."],
+               socialInteraction_fran.nao_speech(["Deze letter is niet deel van het alfabet op jouw briefje."],
                                              NAO_AVAILABLE)
                i += 1
                continue
@@ -318,33 +318,65 @@ def main():
             
         #At the end of a round
             
-        socialInteraction_fran.nao_speech(["Hum, het woord was " + woord.encode('utf-8') + "."], NAO_AVAILABLE)
+        socialInteraction_fran.nao_speech(["Hum, het woord was " + woord.encode('utf-8') + ". Nu schiet me nog een verhaaltje te binnen."], NAO_AVAILABLE)
             
         socialInteraction_fran.nao_speech([disclosure.encode('utf-8')], NAO_AVAILABLE)
         
         prompt_text = readExcel.get_associated_prompt(prompt)
             
         socialInteraction_fran.nao_speech([readExcel.parse_content(prompt_text, True, name).encode('utf-8')], NAO_AVAILABLE)
+        
+        if NAO_AVAILABLE:
+            # Start to listen for confirmation
+            # memory.unsubscribeToEvent("WordRecognized", "SpeechEventListener")                
+            global SpeechEventListener5
+            SpeechEventListener5 = SpeechEventModule("SpeechEventListener", fb_vocabulary)
+            
+            while True:
+                guess_long = SpeechEventListener.memory.getData("WordRecognized")[0]
+                if guess_long != '':
+                    break
+                time.sleep(0.33)  
+                
+            SpeechEventListene5.unsubscribeFromMemory()
+        
+            if guess_long in fb_dict.index:
+                feedback = fb_dict[guess_long]
+            
+        else:
+            # Text input
+            feedback = raw_input("DEBUG: Ja/Nee?:   ")
+  
+        
+        like_story = ["Wow! Dat was echt een spannend verhaaltje!",
+                  "Ik vind het erg leuk jij zo beter te leren kennen.",
+                  "Interessant! Dat wist ik nog niet!"]
             
         if NAO_AVAILABLE:
-            # Start to listen to story
-            # memory.unsubscribeToEvent("WordRecognized", "SpeechEventListener")                
-            global SpeechEventListener3
-            SpeechEventListener3 = SpeechEventModule("SpeechEventListener", eos_vocabulary, False)
-        
-            try:
-                while True:
-                    guess_long = memory.getData("WordRecognized")[0]
-                    confidence = memory.getData("WordRecognized")[1]
-                    print(confidence)
-                    if (guess_long == "Bitterballen") & (confidence > 0.4):
-                        break
-                    time.sleep(0.33)
-            except KeyboardInterrupt:
-                print
-                print "Interrupted by user, shutting down"
-
-            SpeechEventListener3.unsubscribeFromMemory()
+            
+            if feedback == "Ja":
+                # Start to listen to story
+                # memory.unsubscribeToEvent("WordRecognized", "SpeechEventListener")                
+                global SpeechEventListener3
+                SpeechEventListener3 = SpeechEventModule("SpeechEventListener", eos_vocabulary, False)
+            
+                try:
+                    while True:
+                        guess_long = memory.getData("WordRecognized")[0]
+                        confidence = memory.getData("WordRecognized")[1]
+                        print(confidence)
+                        if (guess_long == "Bitterballen") & (confidence > 0.4):
+                            break
+                        time.sleep(0.33)
+                except KeyboardInterrupt:
+                    print
+                    print "Interrupted by user, shutting down"
+    
+                SpeechEventListener3.unsubscribeFromMemory()
+                socialInteraction_fran.nao_speech(like_story, NAO_AVAILABLE)
+                
+            if feedback == "Nee":
+                socialInteraction_fran.nao_speech(["Okee, geeft niet. \\pau=300\\"], NAO_AVAILABLE)
             
         print("will now restart the whole game loop. If child agrees.")
             
@@ -378,7 +410,7 @@ def main():
             socialInteraction_fran.nao_speech(['Jammer, maar ok, dan gaan we iets anders doen!'], NAO_AVAILABLE)
             rounds = 4    
     
-    socialInteraction_fran.nao_speech(["Ik vond het ontzettend mooi met je te spelen! Wij moeten het echt eens herhalen!"], NAO_AVAILABLE)
+    socialInteraction_fran.nao_speech(["Ik vond het ontzettend leuk met je te spelen! Dat moeten we echt eens herhalen!"], NAO_AVAILABLE)
     abort.abort_speechinput
     
     if NAO_AVAILABLE:
