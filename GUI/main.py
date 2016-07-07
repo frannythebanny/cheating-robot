@@ -28,7 +28,7 @@ import time
 import json
 import threading
 
-ip_address ='192.168.0.101'
+ip_address ='192.168.0.100'
 #ip_address = '145.94.155.239'
 
 class SettingsScreen(Screen):
@@ -43,7 +43,7 @@ class SettingsScreen(Screen):
             'participant_name': str(participant_name),
             'game_variant': game_variant,  # Evil, good, or normal hangman?
             'condition': int(condition),  # Social or neutral robot?
-            'participant_number': 26
+            'participant_number': 47
         }
 
         data = json.dumps(params)
@@ -111,7 +111,7 @@ class MyWidget(FloatLayout):
         
         # Update guessed status
         wrong_letters_label = self.parent.ids.wrong_letters
-        wrong_letters_label.text = "Wrong:\n" + wrong_letters
+        wrong_letters_label.text = "Fout:\n" + wrong_letters
 
         # Update game status
         game_status = results["game_status"]

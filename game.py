@@ -251,6 +251,7 @@ def main():
             # Repeat letter
             repeat_letter = [sentence + guess + '?' for sentence in text_repeat]
             socialInteraction_fran.nao_speech(repeat_letter, NAO_AVAILABLE)
+            
     
             if NAO_AVAILABLE:
                 # Start to listen for confirmation
@@ -278,8 +279,8 @@ def main():
                 SpeechEventListener2.unsubscribeFromMemory()
                 # Break the entire interaction on saying stop
                 # TODO: another safe word would be better
-                if feedback == 'Stop':
-                    break
+                #if feedback == 'Stop':
+                    #break
                 
     
             # Determine if letter was in word
@@ -326,57 +327,32 @@ def main():
             
         socialInteraction_fran.nao_speech([readExcel.parse_content(prompt_text, True, name).encode('utf-8')], NAO_AVAILABLE)
         
-        if NAO_AVAILABLE:
-            # Start to listen for confirmation
-            # memory.unsubscribeToEvent("WordRecognized", "SpeechEventListener")                
-            global SpeechEventListener5
-            SpeechEventListener5 = SpeechEventModule("SpeechEventListener", fb_vocabulary)
-            
-            while True:
-                guess_long = SpeechEventListener.memory.getData("WordRecognized")[0]
-                if guess_long != '':
-                    break
-                time.sleep(0.33)  
-                
-            SpeechEventListene5.unsubscribeFromMemory()
-        
-            if guess_long in fb_dict.index:
-                feedback = fb_dict[guess_long]
-            
-        else:
-            # Text input
-            feedback = raw_input("DEBUG: Ja/Nee?:   ")
-  
+        readExcel.write_used_disclosures(os.path.join("usedids","used_ids.xlsx"), readExcel.used_disclosures)
         
         like_story = ["Wow! Dat was echt een spannend verhaaltje!",
                   "Ik vind het erg leuk jij zo beter te leren kennen.",
                   "Interessant! Dat wist ik nog niet!"]
             
         if NAO_AVAILABLE:
-            
-            if feedback == "Ja":
-                # Start to listen to story
-                # memory.unsubscribeToEvent("WordRecognized", "SpeechEventListener")                
-                global SpeechEventListener3
-                SpeechEventListener3 = SpeechEventModule("SpeechEventListener", eos_vocabulary, False)
-            
-                try:
-                    while True:
-                        guess_long = memory.getData("WordRecognized")[0]
-                        confidence = memory.getData("WordRecognized")[1]
-                        print(confidence)
-                        if (guess_long == "Bitterballen") & (confidence > 0.4):
-                            break
-                        time.sleep(0.33)
-                except KeyboardInterrupt:
-                    print
-                    print "Interrupted by user, shutting down"
-    
-                SpeechEventListener3.unsubscribeFromMemory()
-                socialInteraction_fran.nao_speech(like_story, NAO_AVAILABLE)
-                
-            if feedback == "Nee":
-                socialInteraction_fran.nao_speech(["Okee, geeft niet. \\pau=300\\"], NAO_AVAILABLE)
+            # Start to listen to story
+            # memory.unsubscribeToEvent("WordRecognized", "SpeechEventListener")                
+            global SpeechEventListener3
+            SpeechEventListener3 = SpeechEventModule("SpeechEventListener", eos_vocabulary, False)
+        
+            try:
+                while True:
+                    guess_long = memory.getData("WordRecognized")[0]
+                    confidence = memory.getData("WordRecognized")[1]
+                    print(confidence)
+                    if (guess_long == "Bitterballen") & (confidence > 0.4):
+                        break
+                    time.sleep(0.33)
+            except KeyboardInterrupt:
+                print
+                print "Interrupted by user, shutting down"
+
+            SpeechEventListener3.unsubscribeFromMemory()
+            socialInteraction_fran.nao_speech(like_story, NAO_AVAILABLE)
             
         print("will now restart the whole game loop. If child agrees.")
             
@@ -409,6 +385,7 @@ def main():
         elif guess == 'Nee':
             socialInteraction_fran.nao_speech(['Jammer, maar ok, dan gaan we iets anders doen!'], NAO_AVAILABLE)
             rounds = 4    
+            
     
     socialInteraction_fran.nao_speech(["Ik vond het ontzettend leuk met je te spelen! Dat moeten we echt eens herhalen!"], NAO_AVAILABLE)
     abort.abort_speechinput

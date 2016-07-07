@@ -7,36 +7,44 @@
     name: 'settings'
     MySettings:
         Label:
+            text: 'Server IP-Address'
+            pos_hint: {'center_x':0.5, 'center_y': 0.9}
+        TextInput:
+            id: ip_address
+            font_size: 30
+            pos_hint: {'center_x':0.5, 'center_y': 0.8}
+            size_hint: (0.4, 0.08)
+        Label:
             text: 'Participant Name'
-            pos_hint: {'center_x': 0.5, 'center_y': 0.8}
+            pos_hint: {'center_x': 0.5, 'center_y': 0.7}
         TextInput:
             id: participant_name
             font_size: 30
-            pos_hint: {'center_x': 0.5, 'center_y': 0.7}
+            pos_hint: {'center_x': 0.5, 'center_y': 0.6}
             size_hint: (0.4, 0.08)
         Label:
             text: 'Hangman variant (0: normal; 1: evil; 2: good):'
-            pos_hint: {'center_x': 0.5, 'center_y': 0.6}
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
         TextInput:
             id: hangman_variant
             font_size: 30
-            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+            pos_hint: {'center_x': 0.5, 'center_y': 0.4}
             input_filter: 'int'
             size_hint: (0.3, 0.08)
         Label:
             text: 'Condition (0: neutral robot; 1: social robot)?'
-            pos_hint: {'center_x': 0.5, 'center_y': 0.4}
+            pos_hint: {'center_x': 0.5, 'center_y': 0.3}
         TextInput:
             id: condition
             font_size: 30
-            pos_hint: {'center_x': 0.5, 'center_y': 0.3}
+            pos_hint: {'center_x': 0.5, 'center_y': 0.2}
             input_filter: 'int'
             size_hint: (0.3, 0.08)            
         Button:
             text: 'Start Hangman'
             font_size: 30
-            on_release: root.send_settings(participant_name.text, hangman_variant.text, condition.text); app.root.current='game'
-            pos_hint: {'center_x': 0.5, 'center_y': 0.2}
+            on_release: root.send_settings(ip_address.text, participant_name.text, hangman_variant.text, condition.text); app.root.current='game'
+            pos_hint: {'center_x': 0.5, 'center_y': 0.1}
             size_hint: (0.4, 0.1)
             background_color: (75 / 255, 74 / 255, 171 / 255, 255 / 255)
 

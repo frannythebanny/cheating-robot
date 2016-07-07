@@ -1,4 +1,4 @@
-server_url = "http://192.168.0.101:1235/"
+server_url = "http://192.168.0.100:1235/"
 #server_url = "http://145.94.155.239:1235/"
 
 NAO_AVAILABLE = True

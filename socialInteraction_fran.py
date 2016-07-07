@@ -85,6 +85,13 @@ def greeting(nao_available=True):
     name = str(settings['participant_name'])
     print("name is", name)
     
+    if nao_available:
+        
+        postureProxy.goToPosture("StandInit", 0.7)
+    else:
+        print('ACTION: nao stands up')
+        
+    
     # Start social interaction
     nao_speech(["Eindelijk iemand die met mij wil spelen \\pau=1000\\"], nao_available)
     
@@ -306,7 +313,7 @@ def greeting(nao_available=True):
             
     else:
         nao_speech(['''Okee, dan hou ik het geheim en vertel je in plaats daarvan een mop. \\pau=700\\ 
-        Wat staat er op het graf van een robot? \\pau=3000\\ Roest in vrede! \\pau=500\\ Haha! \\pau = 500\\ Oh! 
+        Wat staat er op het graf van een robot? \\pau=3000\\ Roest in vrede! \\pau=500\\ Haha! \\pau = 500\\
         Oh! ''' + name +
         ''' wij zullen veel lol hebben tijdens het spelletje. Ken je galgje al?'''],nao_available)
             
